@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, CircleDot, Link2, Network } from "lucide-react";
+import { ArrowRight, CircleDot, Link2, Network, Repeat2 } from "lucide-react";
+import type { ReactNode } from "react";
 
 type Option = {
   title: string;
   description: string;
   href: string;
   status: "Ready" | "Coming Soon";
-  icon: React.ReactNode;
+  icon: ReactNode;
   preview: string;
 };
 
@@ -26,7 +27,7 @@ const options: Option[] = [
     title: "Doubly Linked List",
     description: "Understand previous + next pointers for bidirectional traversal.",
     href: "/linked-list/doubly",
-    status: "Coming Soon",
+    status: "Ready",
     icon: <Network className="h-4 w-4" />,
     preview: "NULL <- 10 <-> 20 -> NULL",
   },
@@ -34,9 +35,17 @@ const options: Option[] = [
     title: "Circular Linked List",
     description: "See how the last node links back to the first node in a loop.",
     href: "/linked-list/circular",
-    status: "Coming Soon",
+    status: "Ready",
     icon: <CircleDot className="h-4 w-4" />,
     preview: "10 -> 20 -> 30 -> back to 10",
+  },
+  {
+    title: "Doubly Circular Linked List",
+    description: "Nodes have prev and next pointers, and both head/tail are circularly connected.",
+    href: "/linked-list/doubly-circular",
+    status: "Ready",
+    icon: <Repeat2 className="h-4 w-4" />,
+    preview: "30 <- 10 <-> 20 <-> 30 -> 10",
   },
 ];
 
@@ -56,7 +65,7 @@ export default function LinkedListOverviewPage() {
           </p>
         </section>
 
-        <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {options.map((option, index) => (
             <motion.article
               key={option.title}
