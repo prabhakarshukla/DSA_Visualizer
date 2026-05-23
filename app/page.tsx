@@ -33,24 +33,24 @@ const modules: ModuleItem[] = [
   },
   {
     title: "Linked List",
-    subtitle: "Pointer updates and dynamic nodes",
+    subtitle: "Singly, doubly, circular, and doubly circular flows",
     href: "/linked-list",
-    status: "Ready",
+    status: "Active",
     icon: <List className="h-4 w-4" />,
     featured: true,
   },
   {
-    title: "Stacks",
-    subtitle: "LIFO push and pop flow",
+    title: "Stack",
+    subtitle: "LIFO push, pop, peek, and overflow/underflow",
     href: "/stack",
-    status: "Next",
+    status: "Active",
     icon: <Unplug className="h-4 w-4" />,
   },
   {
     title: "Queues",
-    subtitle: "FIFO movement and ordering",
+    subtitle: "Linear, circular, double ended, and priority queue",
     href: "/queue",
-    status: "Next",
+    status: "Active",
     icon: <ArrowRight className="h-4 w-4" />,
   },
   {
@@ -106,6 +106,9 @@ export default function Home() {
                 <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Algorithm Path</h2>
                 <p className="mt-1 text-sm text-slate-600 sm:text-base">
                   Move through connected learning steps from arrays to advanced patterns.
+                </p>
+                <p className="mt-2 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  4 Visualizers Complete · Fully Interactive
                 </p>
               </div>
               <BarChart3 className="hidden h-5 w-5 text-cyan-600 sm:block" />
