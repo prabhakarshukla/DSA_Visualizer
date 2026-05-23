@@ -32,8 +32,8 @@ const queueOptions: QueueOption[] = [
     preview: "10 -> 20 -> 30 -> back to 10",
   },
   {
-    title: "Deque",
-    description: "Double-ended queue with insertion and deletion from both ends.",
+    title: "Double Ended Queue",
+    description: "A queue where insertion and deletion are possible from both FRONT and REAR.",
     href: "/queue/deque",
     status: "Coming Soon",
     icon: <Layers3 className="h-4 w-4" />,
