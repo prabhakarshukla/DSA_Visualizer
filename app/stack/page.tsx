@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDown, Eye, RotateCcw, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowDown, Eye, RotateCcw, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-type OperationKey = "push" | "pop" | "peek" | "isempty" | "reset" | "idle";
+type OperationKey = "push" | "pop" | "peek" | "isempty" | "isfull" | "reset" | "idle";
 
 type ExplanationData = {
   operation: string;
@@ -17,7 +17,7 @@ type ExplanationData = {
 };
 
 const defaultStack = ["10", "20"];
-const maxSize = 6;
+const defaultMaxSize = 6;
 
 const pseudocodeMap: Record<OperationKey, string[]> = {
   push: [
@@ -34,14 +34,10 @@ const pseudocodeMap: Record<OperationKey, string[]> = {
     "    value = stack[TOP]",
     "    TOP = TOP - 1",
   ],
-  peek: [
-    "if TOP == -1:",
-    "    print \"Empty\"",
-    "else:",
-    "    print stack[TOP]",
-  ],
+  peek: ["if TOP == -1:", "    print \"Empty\"", "else:", "    print stack[TOP]"],
   isempty: ["if TOP == -1:", "    return true", "else:", "    return false"],
-  reset: ["stack = [10, 20]", "clear highlight", "clear input", "TOP = stack.length - 1"],
+  isfull: ["if TOP == MAX - 1:", "    return true", "else:", "    return false"],
+  reset: ["stack = [10, 20]", "clear highlight", "clear input", "TOP = stack.length - 1", "MAX = 6"],
   idle: ["Select operation to view stack pseudocode."],
 };
 
@@ -51,23 +47,29 @@ const formatStack = (stack: string[]) =>
 export default function StackPage() {
   const [stack, setStack] = useState<string[]>(defaultStack);
   const [valueInput, setValueInput] = useState("");
+  const [maxSize, setMaxSize] = useState<number>(defaultMaxSize);
+  const [capacityInput, setCapacityInput] = useState<string>(String(defaultMaxSize));
   const [activeOperation, setActiveOperation] = useState<OperationKey>("idle");
   const [highlightTop, setHighlightTop] = useState(false);
+  const [showOverflowWarning, setShowOverflowWarning] = useState(false);
   const [explanation, setExplanation] = useState<ExplanationData>({
     operation: "Overview",
-    concept: "Stack ek linear data structure hai jo LIFO (Last In First Out) principle follow karta hai.",
+    concept:
+      "Stack ek linear data structure hai jo LIFO (Last In First Out) principle follow karta hai. Array-based stack me capacity fixed hoti hai.",
     steps: [
       "Insertion aur deletion dono TOP par hote hain.",
       "Push element add karta hai, Pop remove karta hai.",
-      "Peek sirf top value access karta hai bina remove kiye.",
+      "Overflow tab hota hai jab TOP == MAX - 1 ho jata hai.",
     ],
     finalStack: formatStack(defaultStack),
     timeComplexity: "Depends on operation",
-    examNote: "Stack problems me overflow/underflow conditions explicitly check karna important hota hai.",
+    examNote: "Stack problems me overflow/underflow checks explicitly likhna important hota hai.",
   });
 
   const topIndex = stack.length - 1;
   const currentSize = stack.length;
+  const isEmpty = currentSize === 0;
+  const isFull = currentSize === maxSize;
   const pseudocode = useMemo(() => pseudocodeMap[activeOperation], [activeOperation]);
 
   const setValidationExplanation = (operation: OperationKey, message: string) => {
@@ -85,6 +87,38 @@ export default function StackPage() {
     });
   };
 
+  const handleCapacityUpdate = () => {
+    const parsed = Number(capacityInput);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      setValidationExplanation("isfull", "Stack size must be greater than 0.");
+      return;
+    }
+
+    if (parsed < stack.length) {
+      setValidationExplanation(
+        "isfull",
+        `Current stack size ${stack.length} hai. Capacity ko isse chhota set nahi kar sakte.`
+      );
+      return;
+    }
+
+    setMaxSize(parsed);
+    setShowOverflowWarning(false);
+    setExplanation({
+      operation: "Capacity Update",
+      concept:
+        "Array-based stack me capacity fixed hoti hai, aur yaha learning ke liye user controlled fixed capacity set kar sakte hain.",
+      steps: [
+        `MAX capacity ${parsed} set hui.`,
+        "Current stack elements unchanged rahe.",
+        "Ab overflow check TOP == MAX - 1 rule se hoga.",
+      ],
+      finalStack: formatStack(stack),
+      timeComplexity: "O(1)",
+      examNote: "Educationally cleaner approach: existing elements preserve karne ke liye too-small capacity reject ki gayi.",
+    });
+  };
+
   const handlePush = () => {
     setActiveOperation("push");
     if (valueInput.trim() === "") {
@@ -92,6 +126,7 @@ export default function StackPage() {
       return;
     }
     if (stack.length >= maxSize) {
+      setShowOverflowWarning(true);
       setValidationExplanation("push", "Stack Overflow");
       return;
     }
@@ -99,24 +134,26 @@ export default function StackPage() {
     const value = valueInput.trim();
     const next = [...stack, value];
     setStack(next);
+    setShowOverflowWarning(false);
     setHighlightTop(true);
     setExplanation({
       operation: "Push",
       concept:
-        "Push me new element TOP par add hota hai, TOP pointer update hota hai, aur LIFO property maintain hoti hai.",
+        "Push me insertion tabhi possible hai jab stack full na ho. New element TOP par add hota hai aur LIFO property maintain hoti hai.",
       steps: [
+        `Full condition check hua: TOP (${stack.length - 1}) vs MAX-1 (${maxSize - 1}).`,
         `Value ${value} stack ke top par add hua.`,
         `TOP index ${next.length - 1} par move hua.`,
-        "Latest inserted element ab sabse pehle pop hoga (LIFO).",
       ],
       finalStack: formatStack(next),
       timeComplexity: "O(1)",
-      examNote: "Push direct TOP update operation hai, isliye constant time hota hai.",
+      examNote: "Agar TOP == MAX-1 ho to push allowed nahi hota, warna overflow hota hai.",
     });
   };
 
   const handlePop = () => {
     setActiveOperation("pop");
+    setShowOverflowWarning(false);
     if (stack.length === 0) {
       setValidationExplanation("pop", "Stack Underflow");
       return;
@@ -129,20 +166,21 @@ export default function StackPage() {
     setExplanation({
       operation: "Pop",
       concept:
-        "Pop me TOP element remove hota hai, TOP next lower element par shift hota hai, aur LIFO behavior visible hota hai.",
+        "Pop me TOP element remove hota hai, TOP next lower element par shift hota hai, aur LIFO behavior clearly dikhai deta hai.",
       steps: [
         `TOP element ${removed} remove hua.`,
         next.length === 0 ? "Stack empty ho gaya aur TOP = -1 ho gaya." : `TOP ab index ${next.length - 1} par shift hua.`,
-        "Jo element sabse last push hua tha wahi pehle pop hua (LIFO).",
+        "Jo element sabse last push hua tha wahi pehle pop hua.",
       ],
       finalStack: formatStack(next),
       timeComplexity: "O(1)",
-      examNote: "Pop se memory clean-up + TOP decrement dono constant time me hote hain.",
+      examNote: "Pop constant time operation hai kyunki sirf TOP pointer update hota hai.",
     });
   };
 
   const handlePeek = () => {
     setActiveOperation("peek");
+    setShowOverflowWarning(false);
     if (stack.length === 0) {
       setValidationExplanation("peek", "Stack Underflow");
       return;
@@ -160,21 +198,21 @@ export default function StackPage() {
       ],
       finalStack: formatStack(stack),
       timeComplexity: "O(1)",
-      examNote: "Peek safe read operation hai jisme state mutate nahi hoti.",
+      examNote: "Peek read-only operation hai aur state mutate nahi karti.",
     });
   };
 
   const handleIsEmpty = () => {
     setActiveOperation("isempty");
-    const empty = stack.length === 0;
+    setShowOverflowWarning(false);
     setHighlightTop(false);
     setExplanation({
       operation: "isEmpty",
       concept: "isEmpty stack empty condition check karta hai: agar koi element nahi hai to stack empty return hota hai.",
       steps: [
         "TOP index check hua.",
-        empty ? "TOP = -1 mila, isliye stack empty hai." : `TOP = ${stack.length - 1} mila, isliye stack empty nahi hai.`,
-        `Result: ${empty ? "true" : "false"}`,
+        isEmpty ? "TOP = -1 mila, isliye stack empty hai." : `TOP = ${topIndex} mila, isliye stack empty nahi hai.`,
+        `Result: ${isEmpty ? "true" : "false"}`,
       ],
       finalStack: formatStack(stack),
       timeComplexity: "O(1)",
@@ -182,18 +220,40 @@ export default function StackPage() {
     });
   };
 
+  const handleIsFull = () => {
+    setActiveOperation("isfull");
+    setShowOverflowWarning(isFull);
+    setHighlightTop(false);
+    setExplanation({
+      operation: "isFull",
+      concept:
+        "Stack full condition check karti hai ki current size max capacity ke equal hai ya nahi. Agar TOP == MAX - 1, toh stack full maana jata hai.",
+      steps: [
+        `TOP index ${topIndex} compute hua.`,
+        `MAX - 1 (${maxSize - 1}) se compare hua.`,
+        `Result: ${isFull ? "true (stack full)" : "false (space available)"}`,
+      ],
+      finalStack: formatStack(stack),
+      timeComplexity: "O(1)",
+      examNote: "isFull check overflow prevention ka core guard hota hai.",
+    });
+  };
+
   const handleReset = () => {
     setActiveOperation("reset");
     setStack(defaultStack);
+    setMaxSize(defaultMaxSize);
+    setCapacityInput(String(defaultMaxSize));
     setValueInput("");
     setHighlightTop(false);
+    setShowOverflowWarning(false);
     setExplanation({
       operation: "Reset",
-      concept: "Default stack restore hota hai, highlights clear hote hain, aur inputs clear hote hain.",
+      concept: "Default stack restore hota hai, highlights clear hote hain, inputs clear hote hain.",
       steps: [
         "Stack default values [10, 20] par reset hua.",
-        "Top highlight clear hua.",
-        "Input field clean ho gaya.",
+        "Max capacity default 6 par reset hui.",
+        "Highlights aur input fields clear ho gaye.",
       ],
       finalStack: formatStack(defaultStack),
       timeComplexity: "O(n)",
@@ -219,26 +279,48 @@ export default function StackPage() {
             Learn LIFO flow with push, pop, and top operations through a vertical animated stack.
           </p>
 
-          <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <input
-              type="text"
-              value={valueInput}
-              onChange={(event) => setValueInput(event.target.value)}
-              placeholder="Enter value"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring"
-            />
-            <div className="grid grid-cols-3 gap-2 text-xs font-medium">
+          <div className="mt-6 grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <input
+                type="text"
+                value={valueInput}
+                onChange={(event) => setValueInput(event.target.value)}
+                placeholder="Enter value"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring"
+              />
+
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  value={capacityInput}
+                  onChange={(event) => setCapacityInput(event.target.value)}
+                  placeholder="Stack size"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring"
+                />
+                <button
+                  onClick={handleCapacityUpdate}
+                  className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2.5 text-xs font-semibold text-cyan-700 hover:bg-cyan-100"
+                >
+                  Set Size
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs font-medium md:grid-cols-5">
               <span className="rounded-lg border border-cyan-200 bg-cyan-50 px-2 py-2 text-cyan-700">TOP: {topIndex}</span>
-              <span className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-2 text-blue-700">SIZE: {currentSize}</span>
-              <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-2 text-emerald-700">MAX: {maxSize}</span>
+              <span className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-2 text-blue-700">Size: {currentSize}</span>
+              <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-2 text-emerald-700">Max: {maxSize}</span>
+              <span className="rounded-lg border border-slate-200 bg-slate-100 px-2 py-2 text-slate-700">Empty: {isEmpty ? "true" : "false"}</span>
+              <span className="rounded-lg border border-amber-200 bg-amber-50 px-2 py-2 text-amber-700">Full: {isFull ? "true" : "false"}</span>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             <button onClick={handlePush} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800">Push</button>
             <button onClick={handlePop} className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"><Trash2 className="h-4 w-4" />Pop</button>
             <button onClick={handlePeek} className="inline-flex items-center justify-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500"><Eye className="h-4 w-4" />Peek</button>
             <button onClick={handleIsEmpty} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">isEmpty</button>
+            <button onClick={handleIsFull} className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100">isFull</button>
             <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100"><RotateCcw className="h-4 w-4" />Reset</button>
           </div>
         </section>
@@ -248,12 +330,26 @@ export default function StackPage() {
             <h2 className="text-lg font-semibold text-slate-900">Stack Visual</h2>
 
             <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <AnimatePresence>
+                {(showOverflowWarning || isFull) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="mb-3 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700"
+                  >
+                    <AlertTriangle className="h-4 w-4" />
+                    Stack Overflow Risk: capacity reached.
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-blue-700">
                 <span>TOP</span>
                 <ArrowDown className="h-4 w-4" />
               </div>
 
-              <div className="mx-auto flex min-h-72 w-40 flex-col-reverse justify-start rounded-xl border-2 border-slate-300 bg-white p-2">
+              <div className={`mx-auto flex min-h-72 w-40 flex-col-reverse justify-start rounded-xl border-2 bg-white p-2 ${isFull ? "border-amber-400" : "border-slate-300"}`}>
                 <AnimatePresence>
                   {stack.map((item, index) => {
                     const isTop = index === stack.length - 1;
@@ -289,10 +385,12 @@ export default function StackPage() {
               <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-emerald-700">
                 <li>Stack follows LIFO.</li>
                 <li>Insertion and deletion happen at TOP.</li>
+                <li>Array-based stack has fixed capacity.</li>
                 <li>Push adds element.</li>
                 <li>Pop removes element.</li>
                 <li>Peek accesses top element.</li>
-                <li>Overflow and Underflow possible.</li>
+                <li>Overflow occurs when stack becomes full.</li>
+                <li>Underflow occurs when stack becomes empty.</li>
               </ul>
             </div>
           </div>
