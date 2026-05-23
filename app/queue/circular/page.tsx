@@ -6,6 +6,7 @@ import { AlertTriangle, ArrowDown, Eye, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
 
 type OperationKey = "enqueue" | "dequeue" | "peek-front" | "isempty" | "isfull" | "reset" | "idle";
+type ViewMode = "logical" | "actual";
 
 type ExplanationData = {
   operation: string;
@@ -44,12 +45,7 @@ const pseudocodeMap: Record<OperationKey, string[]> = {
     "else:",
     "    FRONT = (FRONT + 1) % MAX",
   ],
-  "peek-front": [
-    "if FRONT == -1:",
-    "    print \"Empty\"",
-    "else:",
-    "    print queue[FRONT]",
-  ],
+  "peek-front": ["if FRONT == -1:", "    print \"Empty\"", "else:", "    print queue[FRONT]"],
   isempty: ["if FRONT == -1:", "    return true"],
   isfull: ["if (REAR + 1) % MAX == FRONT:", "    return true"],
   reset: ["queue = [10, 20]", "FRONT = 0", "REAR = 1", "clear inputs"],
@@ -93,6 +89,7 @@ export default function CircularQueuePage() {
   const [valueInput, setValueInput] = useState("");
   const [queue, setQueue] = useState<QueueState>(buildDefaultState(defaultMaxCapacity));
   const [activeOperation, setActiveOperation] = useState<OperationKey>("idle");
+  const [viewMode, setViewMode] = useState<ViewMode>("logical");
   const [highlightFront, setHighlightFront] = useState(false);
   const [highlightRear, setHighlightRear] = useState(false);
   const [showOverflowWarning, setShowOverflowWarning] = useState(false);
@@ -100,8 +97,7 @@ export default function CircularQueuePage() {
   const [showWrapPulse, setShowWrapPulse] = useState(false);
   const [explanation, setExplanation] = useState<ExplanationData>({
     operation: "Overview",
-    concept:
-      "Circular Queue FIFO follow karta hai, lekin modulo wrap-around ke through empty slots reuse karta hai.",
+    concept: "Circular Queue FIFO follow karta hai, lekin modulo wrap-around ke through empty slots reuse karta hai.",
     steps: [
       "FRONT dequeue side ko represent karta hai.",
       "REAR enqueue side ko represent karta hai.",
@@ -115,6 +111,7 @@ export default function CircularQueuePage() {
   const isEmpty = queue.front === -1;
   const isFull = !isEmpty && (queue.rear + 1) % maxCapacity === queue.front;
   const pseudocode = useMemo(() => pseudocodeMap[activeOperation], [activeOperation]);
+  const orderedQueue = getQueueOrder(queue);
 
   const setValidationExplanation = (operation: OperationKey, message: string) => {
     setExplanation({
@@ -137,7 +134,6 @@ export default function CircularQueuePage() {
       setValidationExplanation("isfull", "Max capacity must be greater than 0.");
       return;
     }
-
     if (parsed < queue.size) {
       setValidationExplanation("isfull", `Current queue size ${queue.size} hai. Isse chhoti capacity set nahi kar sakte.`);
       return;
@@ -157,8 +153,7 @@ export default function CircularQueuePage() {
     setShowUnderflowWarning(false);
     setExplanation({
       operation: "Capacity Update",
-      concept:
-        "Circular queue capacity update me existing order preserve karte hue array remap kiya gaya.",
+      concept: "Circular queue capacity update me existing order preserve karte hue array remap kiya gaya.",
       steps: [
         `Max capacity ${parsed} set hui.`,
         "Queue elements FRONT se REAR order me preserve hue.",
@@ -177,7 +172,6 @@ export default function CircularQueuePage() {
       setValidationExplanation("enqueue", "Please enter a value first.");
       return;
     }
-
     if (isFull) {
       setShowOverflowWarning(true);
       setShowUnderflowWarning(false);
@@ -199,12 +193,7 @@ export default function CircularQueuePage() {
     }
 
     nextArr[nextRear] = value;
-    const nextState: QueueState = {
-      arr: nextArr,
-      front: nextFront,
-      rear: nextRear,
-      size: queue.size + 1,
-    };
+    const nextState: QueueState = { arr: nextArr, front: nextFront, rear: nextRear, size: queue.size + 1 };
 
     setQueue(nextState);
     setHighlightRear(true);
@@ -213,8 +202,7 @@ export default function CircularQueuePage() {
     setShowUnderflowWarning(false);
     setExplanation({
       operation: "Enqueue",
-      concept:
-        "Enqueue me insertion REAR par hoti hai, modulo wrap-around use hota hai, empty spaces reuse hoti hain, aur FIFO maintained rehta hai.",
+      concept: "Enqueue me insertion REAR par hoti hai, modulo wrap-around use hota hai, empty spaces reuse hoti hain, aur FIFO maintained rehta hai.",
       steps: [
         `Value ${value} insert karne se pehle full condition check hui: (REAR + 1) % MAX == FRONT.`,
         isEmpty ? "Queue empty thi, FRONT=0 aur REAR=0 set hua." : `REAR modulo logic se update hua to ${nextRear}.`,
@@ -241,7 +229,7 @@ export default function CircularQueuePage() {
 
     let nextFront = queue.front;
     let nextRear = queue.rear;
-    let nextSize = queue.size - 1;
+    const nextSize = queue.size - 1;
 
     if (queue.front === queue.rear) {
       nextFront = -1;
@@ -252,12 +240,7 @@ export default function CircularQueuePage() {
       setShowWrapPulse(oldFront > nextFront);
     }
 
-    const nextState: QueueState = {
-      arr: nextArr,
-      front: nextFront,
-      rear: nextRear,
-      size: nextSize,
-    };
+    const nextState: QueueState = { arr: nextArr, front: nextFront, rear: nextRear, size: nextSize };
 
     setQueue(nextState);
     setHighlightFront(true);
@@ -269,9 +252,7 @@ export default function CircularQueuePage() {
       concept: "Deletion FRONT se hoti hai aur FRONT circularly move karta hai.",
       steps: [
         `FRONT value ${removed} remove hua.`,
-        queue.front === queue.rear
-          ? "Single element case me FRONT aur REAR dono -1 par reset hue."
-          : `FRONT modulo logic se ${nextFront} par move hua.`,
+        queue.front === queue.rear ? "Single element case me FRONT aur REAR dono -1 par reset hue." : `FRONT modulo logic se ${nextFront} par move hua.`,
         "FIFO maintain raha kyunki oldest element remove hua.",
       ],
       finalQueue: formatQueue(nextState),
@@ -297,11 +278,7 @@ export default function CircularQueuePage() {
     setExplanation({
       operation: "Peek Front",
       concept: "Peek Front me FRONT element access hota hai, deletion nahi hoti.",
-      steps: [
-        `FRONT index ${queue.front} identify hua.`,
-        `FRONT value ${frontValue} read ki gayi.`,
-        "Queue state unchanged rahi.",
-      ],
+      steps: [`FRONT index ${queue.front} identify hua.`, `FRONT value ${frontValue} read ki gayi.`, "Queue state unchanged rahi."],
       finalQueue: formatQueue(queue),
       timeComplexity: "O(1)",
       examNote: "Peek read-only operation hai aur queue mutate nahi karti.",
@@ -363,18 +340,12 @@ export default function CircularQueuePage() {
     setExplanation({
       operation: "Reset",
       concept: "Default queue restore hoti hai, pointers reset hote hain, aur inputs clear hote hain.",
-      steps: [
-        "Queue default values [10, 20] par reset hui.",
-        "FRONT=0 aur REAR=1 reset hue.",
-        "Inputs aur highlight states clear ho gaye.",
-      ],
+      steps: ["Queue default values [10, 20] par reset hui.", "FRONT=0 aur REAR=1 reset hue.", "Inputs aur highlight states clear ho gaye."],
       finalQueue: formatQueue(resetState),
       timeComplexity: "O(n)",
       examNote: "Reset se circular state consistent baseline par wapas aa jati hai.",
     });
   };
-
-  const orderedQueue = getQueueOrder(queue);
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] px-4 py-10 text-slate-900 sm:px-6 lg:px-8">
@@ -386,27 +357,13 @@ export default function CircularQueuePage() {
 
         <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Circular Queue Visualizer</h1>
-          <p className="mt-3 max-w-3xl text-slate-600">
-            Understand circular FIFO behavior with modulo wrap-around where empty slots get reused efficiently.
-          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">Understand circular FIFO behavior with modulo wrap-around where empty slots get reused efficiently.</p>
 
           <div className="mt-6 grid grid-cols-1 gap-3">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <input
-                type="text"
-                value={valueInput}
-                onChange={(event) => setValueInput(event.target.value)}
-                placeholder="Enter value"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring"
-              />
+              <input type="text" value={valueInput} onChange={(event) => setValueInput(event.target.value)} placeholder="Enter value" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring" />
               <div className="flex gap-2">
-                <input
-                  type="number"
-                  value={capacityInput}
-                  onChange={(event) => setCapacityInput(event.target.value)}
-                  placeholder="Max capacity"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring"
-                />
+                <input type="number" value={capacityInput} onChange={(event) => setCapacityInput(event.target.value)} placeholder="Max capacity" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring" />
                 <button onClick={handleCapacityUpdate} className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2.5 text-xs font-semibold text-cyan-700 hover:bg-cyan-100">Set Max</button>
               </div>
             </div>
@@ -438,81 +395,108 @@ export default function CircularQueuePage() {
             <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <AnimatePresence>
                 {showOverflowWarning && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="mb-3 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700"
-                  >
-                    <AlertTriangle className="h-4 w-4" />
-                    Circular Queue Overflow
+                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="mb-3 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
+                    <AlertTriangle className="h-4 w-4" />Circular Queue Overflow
                   </motion.div>
                 )}
                 {showUnderflowWarning && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="mb-3 flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700"
-                  >
-                    <AlertTriangle className="h-4 w-4" />
-                    Circular Queue Underflow
+                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="mb-3 flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700">
+                    <AlertTriangle className="h-4 w-4" />Circular Queue Underflow
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <div className="mb-2 text-xs font-semibold text-slate-600">Index</div>
-              <div className="mb-2 grid gap-2" style={{ gridTemplateColumns: `repeat(${maxCapacity}, minmax(0, 1fr))` }}>
-                {Array.from({ length: maxCapacity }).map((_, idx) => (
-                  <p key={`idx-${idx}`} className="text-center text-xs font-medium text-slate-500">{idx}</p>
-                ))}
+              <div className="mb-3 inline-flex rounded-xl border border-slate-200 bg-white p-1 text-xs font-medium">
+                <button onClick={() => setViewMode("logical")} className={`rounded-lg px-3 py-1.5 ${viewMode === "logical" ? "bg-cyan-100 text-cyan-800" : "text-slate-600"}`}>Logical Queue View</button>
+                <button onClick={() => setViewMode("actual")} className={`rounded-lg px-3 py-1.5 ${viewMode === "actual" ? "bg-cyan-100 text-cyan-800" : "text-slate-600"}`}>Actual Circular Array</button>
               </div>
 
-              <div className={`rounded-xl border-2 bg-white p-2 ${isFull ? "border-amber-400" : "border-slate-300"}`}>
-                <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${maxCapacity}, minmax(0, 1fr))` }}>
-                  {queue.arr.map((value, idx) => {
-                    const isFrontSlot = !isEmpty && idx === queue.front;
-                    const isRearSlot = !isEmpty && idx === queue.rear;
-                    return (
-                      <motion.div
-                        key={`slot-${idx}-${value ?? "empty"}`}
-                        layout
-                        initial={{ opacity: 0.85, y: 6 }}
-                        animate={{
-                          opacity: 1,
-                          y: 0,
-                          backgroundColor: value
-                            ? isFrontSlot && highlightFront
-                              ? "#a7f3d0"
-                              : isRearSlot && highlightRear
-                                ? "#bfdbfe"
-                                : "#f8fafc"
-                            : "#f1f5f9",
-                        }}
-                        transition={{ type: "spring", stiffness: 280, damping: 20 }}
-                        className="rounded-lg border border-slate-300 px-2 py-3 text-center text-sm font-semibold text-slate-800"
-                      >
-                        {value ?? ""}
+              {viewMode === "logical" ? (
+                <div>
+                  {orderedQueue.length === 0 ? (
+                    <div className="text-sm text-slate-500">FRONT -&gt; EMPTY &lt;- REAR</div>
+                  ) : (
+                    <div className="rounded-xl border border-cyan-200 bg-cyan-50/60 p-3">
+                      <div className="mb-2 flex justify-between text-xs font-semibold text-blue-700">
+                        <span>FRONT</span>
+                        <span>REAR</span>
+                      </div>
+                      <div className="mb-2 flex justify-between text-blue-600">
+                        <ArrowDown className="h-4 w-4" />
+                        <ArrowDown className="h-4 w-4" />
+                      </div>
+                      <motion.div layout className="flex flex-wrap items-center gap-2">
+                        <AnimatePresence>
+                          {orderedQueue.map((value, idx) => (
+                            <motion.div
+                              key={`logical-${value}-${idx}`}
+                              layout
+                              initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: -8, scale: 0.92 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm"
+                            >
+                              {value}
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
                       </motion.div>
-                    );
-                  })}
+                    </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <div className="mb-2 text-xs font-semibold text-slate-600">Index</div>
+                  <div className="mb-2 grid gap-2" style={{ gridTemplateColumns: `repeat(${maxCapacity}, minmax(0, 1fr))` }}>
+                    {Array.from({ length: maxCapacity }).map((_, idx) => (
+                      <p key={`idx-${idx}`} className="text-center text-xs font-medium text-slate-500">{idx}</p>
+                    ))}
+                  </div>
 
-              <div className="mt-3 flex items-center justify-between text-xs font-semibold text-blue-700">
-                <span className={highlightFront ? "text-emerald-700" : ""}>FRONT</span>
-                <span className={highlightRear ? "text-emerald-700" : ""}>REAR</span>
-              </div>
-              <div className="mb-2 flex items-center justify-between text-blue-600">
-                <ArrowDown className="h-4 w-4" />
-                <ArrowDown className="h-4 w-4" />
-              </div>
+                  <div className={`rounded-xl border-2 bg-white p-2 ${isFull ? "border-amber-400" : "border-slate-300"}`}>
+                    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${maxCapacity}, minmax(0, 1fr))` }}>
+                      {queue.arr.map((value, idx) => {
+                        const isFrontSlot = !isEmpty && idx === queue.front;
+                        const isRearSlot = !isEmpty && idx === queue.rear;
+                        return (
+                          <motion.div
+                            key={`slot-${idx}-${value ?? "empty"}`}
+                            layout
+                            initial={{ opacity: 0.85, y: 6 }}
+                            animate={{
+                              opacity: 1,
+                              y: 0,
+                              backgroundColor: value
+                                ? isFrontSlot
+                                  ? "#a7f3d0"
+                                  : isRearSlot
+                                    ? "#bfdbfe"
+                                    : "#f8fafc"
+                                : "#f1f5f9",
+                            }}
+                            transition={{ type: "spring", stiffness: 280, damping: 20 }}
+                            className="rounded-lg border border-slate-300 px-2 py-3 text-center text-sm font-semibold text-slate-800"
+                          >
+                            {value ?? ""}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-              <motion.div
-                animate={showWrapPulse ? { rotate: [0, 6, 0, -6, 0] } : { rotate: 0 }}
-                transition={{ duration: 0.7 }}
-                className="mt-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-semibold text-cyan-700"
-              >
+                  <div className="mt-3 flex items-center justify-between text-xs font-semibold text-blue-700">
+                    <span className={highlightFront ? "text-emerald-700" : ""}>FRONT</span>
+                    <span className={highlightRear ? "text-emerald-700" : ""}>REAR</span>
+                  </div>
+                  <div className="mb-2 flex items-center justify-between text-blue-600">
+                    <ArrowDown className="h-4 w-4" />
+                    <ArrowDown className="h-4 w-4" />
+                  </div>
+                </div>
+              )}
+
+              <motion.div animate={showWrapPulse ? { rotate: [0, 6, 0, -6, 0] } : { rotate: 0 }} transition={{ duration: 0.7 }} className="mt-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-semibold text-cyan-700">
                 Wrap-around: index = (index + 1) % MAX
               </motion.div>
             </div>
@@ -526,6 +510,7 @@ export default function CircularQueuePage() {
                 <li>Overflow condition differs from Linear Queue.</li>
                 <li>Better memory utilization.</li>
               </ul>
+              <p className="mt-3 text-sm text-emerald-800">Circular Queue me dequeue ke baad elements physically shift nahi hote. Sirf FRONT pointer move hota hai, jisse operations O(1) time me perform hote hain.</p>
             </div>
 
             <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
@@ -541,45 +526,20 @@ export default function CircularQueuePage() {
           <div className="grid grid-cols-1 gap-4">
             <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
               <h3 className="text-lg font-semibold text-slate-900">Step Explanation</h3>
-
               <div className="mt-4 space-y-3 text-sm">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Operation</p>
-                  <p className="mt-1 font-medium text-slate-800">{explanation.operation}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Concept</p>
-                  <p className="mt-1 leading-6 text-slate-700">{explanation.concept}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Step-by-step process</p>
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">
-                    {explanation.steps.map((step) => (
-                      <li key={step}>{step}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Final queue</p>
-                  <p className="mt-1 font-mono text-slate-800">{explanation.finalQueue}</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Time complexity</p>
-                  <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{explanation.timeComplexity}</span>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Exam note</p>
-                  <p className="mt-1 leading-6 text-slate-700">{explanation.examNote}</p>
-                </div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Operation</p><p className="mt-1 font-medium text-slate-800">{explanation.operation}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Concept</p><p className="mt-1 leading-6 text-slate-700">{explanation.concept}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Step-by-step process</p><ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">{explanation.steps.map((step) => (<li key={step}>{step}</li>))}</ul></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Final queue</p><p className="mt-1 font-mono text-slate-800">{explanation.finalQueue}</p></div>
+                <div className="flex flex-wrap items-center gap-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Time complexity</p><span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{explanation.timeComplexity}</span></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Exam note</p><p className="mt-1 leading-6 text-slate-700">{explanation.examNote}</p></div>
               </div>
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-slate-900 p-6 text-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.2)]">
               <h3 className="text-lg font-semibold text-cyan-200">Pseudocode</h3>
               <div className="mt-3 space-y-1 font-mono text-sm leading-6 text-slate-100/95">
-                {pseudocode.map((line, idx) => (
-                  <p key={`${line}-${idx}`}>{line === "" ? " " : line}</p>
-                ))}
+                {pseudocode.map((line, idx) => (<p key={`${line}-${idx}`}>{line === "" ? " " : line}</p>))}
               </div>
             </div>
           </div>
