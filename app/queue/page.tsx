@@ -9,7 +9,7 @@ type QueueOption = {
   title: string;
   description: string;
   href: string;
-  status: "Ready" | "Coming Soon";
+  status: "Ready";
   icon: ReactNode;
   preview: string;
 };
@@ -17,7 +17,7 @@ type QueueOption = {
 const queueOptions: QueueOption[] = [
   {
     title: "Linear Queue",
-    description: "Basic FIFO queue where enqueue happens at REAR and dequeue at FRONT.",
+    description: "FIFO Basics - Basic FIFO queue where enqueue happens at REAR and dequeue at FRONT.",
     href: "/queue/linear",
     status: "Ready",
     icon: <ArrowRight className="h-4 w-4" />,
@@ -25,25 +25,25 @@ const queueOptions: QueueOption[] = [
   },
   {
     title: "Circular Queue",
-    description: "Uses wrap-around indexing to reuse empty space efficiently.",
+    description: "Efficient Memory Usage - Uses wrap-around indexing to reuse empty space efficiently.",
     href: "/queue/circular",
-    status: "Coming Soon",
+    status: "Ready",
     icon: <CircleDot className="h-4 w-4" />,
     preview: "10 -> 20 -> 30 -> back to 10",
   },
   {
     title: "Double Ended Queue",
-    description: "A queue where insertion and deletion are possible from both FRONT and REAR.",
+    description: "Operations at Both Ends - Insertion and deletion are possible from both FRONT and REAR.",
     href: "/queue/deque",
-    status: "Coming Soon",
+    status: "Ready",
     icon: <Layers3 className="h-4 w-4" />,
     preview: "Front <-> [ 10 20 30 ] <-> Rear",
   },
   {
     title: "Priority Queue",
-    description: "Elements are served by priority; highest priority processed first.",
+    description: "Priority-Based Processing - Elements are served by priority; highest priority processed first.",
     href: "/queue/priority",
-    status: "Coming Soon",
+    status: "Ready",
     icon: <ListOrdered className="h-4 w-4" />,
     preview: "P1(40) -> P2(20) -> P3(10)",
   },
@@ -79,9 +79,7 @@ export default function QueueOverviewPage() {
                 <span className="rounded-xl bg-slate-900 p-2 text-cyan-300">{option.icon}</span>
                 <span
                   className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
-                    option.status === "Ready"
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-blue-200 bg-blue-50 text-blue-700"
+                    "border-emerald-200 bg-emerald-50 text-emerald-700"
                   }`}
                 >
                   {option.status}
