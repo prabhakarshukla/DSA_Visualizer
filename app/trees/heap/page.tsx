@@ -121,14 +121,14 @@ export default function HeapPage() {
   }, [selectedIndex, heapData.length]);
 
   const positions = useMemo(() => {
-    const verticalSpacing = heapData.length > 7 ? 24 : 28;
+    const verticalSpacing = heapData.length > 7 ? 20 : 24;
     return heapData.map((node, index) => {
       const level = Math.floor(Math.log2(index + 1));
       const levelStart = 2 ** level - 1;
       const pos = index - levelStart;
       const slots = 2 ** level;
       const x = ((pos + 0.5) / slots) * 100;
-      const y = 14 + level * verticalSpacing;
+      const y = 12 + level * verticalSpacing;
       return { node, index, x, y };
     });
   }, [heapData]);
@@ -357,8 +357,8 @@ export default function HeapPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f4f7fb] px-4 py-10 text-slate-900 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-6xl space-y-8">
+    <main className="min-h-screen bg-[#f4f7fb] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl space-y-6">
         <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-700">
           <Link href="/trees" className="text-blue-700 hover:text-blue-800">
             &larr; Back to Trees overview
@@ -368,7 +368,7 @@ export default function HeapPage() {
           </Link>
         </div>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)] sm:p-8">
+        <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)] sm:p-6">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -384,121 +384,22 @@ export default function HeapPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)] sm:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Heap Mode
-              </p>
-              <div className="mt-3 inline-flex rounded-full border border-slate-200 bg-slate-100 p-1">
-                <button
-                  type="button"
-                  onClick={() => setHeapMode("min")}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                    heapMode === "min"
-                      ? "bg-blue-600 text-white shadow"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Min Heap
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setHeapMode("max")}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                    heapMode === "max"
-                      ? "bg-emerald-500 text-white shadow"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Max Heap
-                </button>
-              </div>
-            </div>
-
-            <div className="flex w-full flex-col gap-2 sm:w-auto">
-              <label htmlFor="heap-node" className="text-sm font-semibold text-slate-700">
-                Node value
-              </label>
-              <input
-                id="heap-node"
-                value={nodeValue}
-                onChange={(event) => setNodeValue(event.target.value)}
-                placeholder="Enter value"
-                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100 sm:w-56"
-              />
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={handleInsert}
-              disabled={isAnimating}
-              className={`rounded-2xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${
-                isAnimating
-                  ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
-              }`}
-            >
-              Insert Node
-            </button>
-            <button
-              type="button"
-              onClick={handleDeleteRoot}
-              disabled={isAnimating}
-              className={`rounded-2xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${
-                isAnimating
-                  ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
-              }`}
-            >
-              Delete Root
-            </button>
-            <button
-              type="button"
-              onClick={handleExtract}
-              disabled={isAnimating}
-              className={`rounded-2xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${
-                isAnimating
-                  ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
-              }`}
-            >
-              Extract {heapMode === "min" ? "Min" : "Max"}
-            </button>
-            {["Heapify", "Reset Heap"].map((label) => (
-              <button
-                key={label}
-                type="button"
-                disabled={isAnimating}
-                className={`rounded-2xl border px-4 py-2 text-sm font-semibold shadow-sm transition ${
-                  isAnimating
-                    ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+        <div className="grid gap-5 lg:grid-cols-[1.6fr,1fr] xl:grid-cols-[2.1fr,2fr]">
+          <div className="space-y-5">
+            <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-slate-900">Tree Visualization</h2>
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Tree Visualization</h2>
                 <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                   {modeLabel}
                 </span>
               </div>
-              <div className="mt-6 rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-4">
-                <div className="relative h-72 w-full sm:h-80 lg:h-96">
+              <div className="mt-4 rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-3">
+                <div className="relative h-56 w-full sm:h-64 lg:h-72">
                   <svg
-                    className="absolute inset-0 h-full w-full"
+                    className="absolute inset-0 z-0 h-full w-full text-blue-300"
                     viewBox="0 0 100 100"
                     preserveAspectRatio="none"
+                    aria-hidden="true"
                   >
                     {edges.map((edge, idx) => (
                       <line
@@ -507,7 +408,7 @@ export default function HeapPage() {
                         y1={edge.y1}
                         x2={edge.x2}
                         y2={edge.y2}
-                        stroke="#60a5fa"
+                        stroke="currentColor"
                         strokeWidth="1.5"
                       />
                     ))}
@@ -552,14 +453,14 @@ export default function HeapPage() {
                                 }
                               : isRoot
                                 ? {
-                                    backgroundColor: "#eef2ff",
-                                    borderColor: "#6366f1",
-                                    scale: 1.02,
-                                    boxShadow: "0 0 10px rgba(99,102,241,0.25)",
+                                    backgroundColor: "#ecfdf3",
+                                    borderColor: "#34d399",
+                                    scale: 1.04,
+                                    boxShadow: "0 0 12px rgba(16,185,129,0.25)",
                                   }
                                 : {
                                     backgroundColor: "#ffffff",
-                                    borderColor: "#e2e8f0",
+                                    borderColor: "#3b82f6",
                                     scale: 1,
                                     boxShadow: "0 0 0 rgba(0,0,0,0)",
                                   };
@@ -584,14 +485,11 @@ export default function HeapPage() {
                               repeatType: "mirror",
                             },
                           }}
-                          className="absolute flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold shadow-sm sm:h-12 sm:w-12 sm:text-sm"
+                          className="absolute z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border bg-white text-center text-sm font-bold text-slate-900 shadow-sm sm:h-12 sm:w-12 sm:text-base"
                           style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
                           onClick={() => setSelectedIndex(pos.index)}
-                          whileHover={{ scale: 1.1 }}
-                          animate={{
-                            color: "#0f172a",
-                            ...styles,
-                          }}
+                          whileHover={{ scale: 1.08 }}
+                          animate={{ opacity: 1, color: "#0f172a", ...styles }}
                         >
                           {pos.node.value}
                         </motion.div>
@@ -602,18 +500,28 @@ export default function HeapPage() {
               </div>
             </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-              <h2 className="text-xl font-semibold text-slate-900">Array Representation</h2>
+            <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+              <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+                Array Representation
+              </h2>
               <div className="mt-4 space-y-3">
-                <div className="text-sm font-semibold text-slate-500">Index:</div>
-                <div className="grid grid-cols-5 gap-1 text-center text-xs font-semibold text-slate-700 sm:grid-cols-8 sm:gap-2 sm:text-sm">
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Index
+                </div>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(46px,1fr))] gap-2 text-center text-xs font-semibold text-slate-500 sm:text-sm">
                   {heapData.map((_, index) => (
-                    <div key={`index-${index}`} className="rounded-xl bg-slate-100 px-2 py-1">
+                    <div
+                      key={`index-${index}`}
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1"
+                    >
                       {index}
                     </div>
                   ))}
                 </div>
-                <div className="grid grid-cols-5 gap-1 text-center text-xs font-semibold text-slate-900 sm:grid-cols-8 sm:gap-2 sm:text-sm">
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Values
+                </div>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(46px,1fr))] gap-2 text-center text-xs font-semibold text-slate-900 sm:text-sm">
                   <AnimatePresence>
                     {heapData.map((node, index) => {
                       const isAnimated = highlightIndices.includes(index);
@@ -658,16 +566,16 @@ export default function HeapPage() {
                                 }
                               : isRoot
                                 ? {
-                                    backgroundColor: "#eef2ff",
-                                    borderColor: "#6366f1",
-                                    color: "#3730a3",
+                                    backgroundColor: "#ecfdf3",
+                                    borderColor: "#34d399",
+                                    color: "#065f46",
                                     scale: 1.02,
-                                    boxShadow: "0 0 10px rgba(99,102,241,0.2)",
+                                    boxShadow: "0 0 10px rgba(16,185,129,0.2)",
                                   }
                                 : {
-                                    backgroundColor: "#eff6ff",
+                                    backgroundColor: "#ffffff",
                                     borderColor: "#bfdbfe",
-                                    color: "#1e3a8a",
+                                    color: "#0f172a",
                                     scale: 1,
                                     boxShadow: "0 0 0 rgba(0,0,0,0)",
                                   };
@@ -692,12 +600,12 @@ export default function HeapPage() {
                               repeatType: "mirror",
                             },
                           }}
-                          className="cursor-pointer rounded-xl border px-2 py-2"
+                          className="cursor-pointer rounded-lg border px-2 py-2 font-semibold shadow-sm"
                           onClick={() => setSelectedIndex(index)}
                           whileHover={{ scale: 1.05 }}
-                          animate={{ ...styles }}
+                          animate={{ opacity: 1, ...styles }}
                         >
-                          [{node.value}]
+                          {node.value}
                         </motion.div>
                       );
                     })}
@@ -705,171 +613,287 @@ export default function HeapPage() {
                 </div>
               </div>
             </section>
+
+            <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Controls Panel</h2>
+                <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                  Active: {modeLabel}
+                </span>
+              </div>
+              <div className="mt-4 grid gap-4">
+                <div className="grid gap-4 sm:grid-cols-[1fr,auto]">
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="heap-node" className="text-sm font-semibold text-slate-700">
+                      Node value
+                    </label>
+                    <input
+                      id="heap-node"
+                      value={nodeValue}
+                      onChange={(event) => setNodeValue(event.target.value)}
+                      placeholder="Enter value"
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Heap Mode
+                    </p>
+                    <div className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-100 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setHeapMode("min")}
+                        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                          heapMode === "min"
+                            ? "bg-blue-600 text-white shadow"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        Min Heap
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setHeapMode("max")}
+                        className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                          heapMode === "max"
+                            ? "bg-emerald-500 text-white shadow"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                      >
+                        Max Heap
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+                  <button
+                    type="button"
+                    onClick={handleInsert}
+                    disabled={isAnimating}
+                    className={`rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition ${
+                      isAnimating
+                        ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
+                    }`}
+                  >
+                    Insert Node
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteRoot}
+                    disabled={isAnimating}
+                    className={`rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition ${
+                      isAnimating
+                        ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
+                    }`}
+                  >
+                    Delete Root
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExtract}
+                    disabled={isAnimating}
+                    className={`rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition ${
+                      isAnimating
+                        ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
+                    }`}
+                  >
+                    Extract {heapMode === "min" ? "Min" : "Max"}
+                  </button>
+                  {["Heapify", "Reset Heap"].map((label) => (
+                    <button
+                      key={label}
+                      type="button"
+                      disabled={isAnimating}
+                      className={`rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition ${
+                        isAnimating
+                          ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </section>
           </div>
 
-          <aside className="space-y-6">
-            <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-              <h2 className="text-xl font-semibold text-slate-900">Explanation Panel</h2>
-              <div className="mt-4 space-y-4 text-sm text-slate-700">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Operation
-                  </p>
-                  <p className="mt-1 text-base font-semibold text-slate-900">{activeOperation}</p>
-                </div>
-                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-500">
-                    Concept
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed">{explanation.concept}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Step-by-step process
-                  </p>
-                  <ul className="mt-2 space-y-2">
-                    {heapifySteps.map((step, idx) => (
-                      <li
-                        key={`step-${idx}`}
-                        className="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-blue-800"
-                      >
-                        {step}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Heap property changes
-                  </p>
-                  <ul className="mt-2 space-y-2">
-                    {propertyChanges.map((change, idx) => (
-                      <li
-                        key={`change-${idx}`}
-                        className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-800"
-                      >
-                        {change}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Final Heap
-                  </p>
-                  <p className="mt-1 font-mono text-sm text-slate-900">{finalHeap}</p>
-                </div>
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
-                  Time complexity:{" "}
-                  <span className="font-semibold">{explanation.timeComplexity}</span>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-600">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                    Exam note
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed">{explanation.examNote}</p>
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-              <h2 className="text-xl font-semibold text-slate-900">Pseudocode</h2>
-              <div className="mt-4 space-y-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs text-slate-700">
-                {pseudocode.map((line, idx) => (
-                  <div key={`pseudo-${idx}`}>{line}</div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-              <h2 className="text-xl font-semibold text-slate-900">Heap Info</h2>
-              <div className="mt-4 space-y-3 text-sm text-slate-700">
-                {[
-                  { label: "Heap Type", value: modeLabel },
-                  { label: "Root Value", value: rootValue },
-                  { label: "Heap Size", value: heapSize },
-                  { label: "Tree Height", value: treeHeight },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                  >
-                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      {item.label}
-                    </span>
-                    <span className="text-base font-semibold text-slate-900">{item.value}</span>
+          <div className="grid gap-5 xl:grid-cols-2">
+            <div className="space-y-5">
+              <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+                  Explanation Panel
+                </h2>
+                <div className="mt-4 space-y-4 text-sm text-slate-700">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Operation
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-slate-900">
+                      {activeOperation}
+                    </p>
                   </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-              <h2 className="text-xl font-semibold text-slate-900">Heap Formula</h2>
-              <div className="mt-4 space-y-3 text-sm text-slate-700">
-                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
-                  Left Child = 2i + 1
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-500">
+                      Concept
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed">{explanation.concept}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Step-by-step process
+                    </p>
+                    <ul className="mt-2 space-y-2">
+                      {heapifySteps.map((step, idx) => (
+                        <li
+                          key={`step-${idx}`}
+                          className="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-2 text-blue-800"
+                        >
+                          {step}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Heap property changes
+                    </p>
+                    <ul className="mt-2 space-y-2">
+                      {propertyChanges.map((change, idx) => (
+                        <li
+                          key={`change-${idx}`}
+                          className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-800"
+                        >
+                          {change}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Final Heap
+                    </p>
+                    <p className="mt-1 font-mono text-sm text-slate-900">{finalHeap}</p>
+                  </div>
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700">
+                    Time complexity:{" "}
+                    <span className="font-semibold">{explanation.timeComplexity}</span>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-600">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      Exam note
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed">{explanation.examNote}</p>
+                  </div>
                 </div>
-                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
-                  Right Child = 2i + 2
-                </div>
-                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
-                  Parent = floor((i - 1) / 2)
-                </div>
-              </div>
-            </section>
+              </section>
 
-            <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-              <h2 className="text-xl font-semibold text-slate-900">Key Concepts</h2>
-              <ul className="mt-4 space-y-3 text-sm text-slate-700">
-                {[
-                  "Heap is a Complete Binary Tree.",
-                  "Min Heap keeps smallest element at root.",
-                  "Max Heap keeps largest element at root.",
-                  "Heaps are efficiently stored using arrays.",
-                ].map((item) => (
-                  <li
-                    key={item}
-                    className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-emerald-800"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
+              <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Pseudocode</h2>
+                <div className="mt-4 space-y-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs text-slate-700">
+                  {pseudocode.map((line, idx) => (
+                    <div key={`pseudo-${idx}`}>{line}</div>
+                  ))}
+                </div>
+              </section>
+            </div>
 
-            <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-              <h2 className="text-xl font-semibold text-slate-900">Real-world use cases</h2>
-              <ul className="mt-4 space-y-3 text-sm text-slate-700">
-                {[
-                  "Priority Queue",
-                  "CPU Scheduling",
-                  "Dijkstra Algorithm",
-                  "Memory Management",
-                ].map((item) => (
-                  <li
-                    key={item}
-                    className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </aside>
+            <div className="space-y-5">
+              <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Heap Info</h2>
+                <div className="mt-4 space-y-3 text-sm text-slate-700">
+                  {[
+                    { label: "Heap Type", value: modeLabel },
+                    { label: "Root Value", value: rootValue },
+                    { label: "Heap Size", value: heapSize },
+                    { label: "Tree Height", value: treeHeight },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                    >
+                      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                        {item.label}
+                      </span>
+                      <span className="text-base font-semibold text-slate-900">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Heap Formula</h2>
+                <div className="mt-4 space-y-3 text-sm text-slate-700">
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
+                    Left Child = 2i + 1
+                  </div>
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
+                    Right Child = 2i + 2
+                  </div>
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
+                    Parent = floor((i - 1) / 2)
+                  </div>
+                </div>
+              </section>
+
+              <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">Key Concepts</h2>
+                <ul className="mt-4 space-y-3 text-sm text-slate-700">
+                  {[
+                    "Heap is a Complete Binary Tree.",
+                    "Min Heap keeps smallest element at root.",
+                    "Max Heap keeps largest element at root.",
+                    "Heaps are efficiently stored using arrays.",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-emerald-800"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
+                <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">
+                  Real-world use cases
+                </h2>
+                <ul className="mt-4 space-y-3 text-sm text-slate-700">
+                  {[
+                    "Priority Queue",
+                    "CPU Scheduling",
+                    "Dijkstra Algorithm",
+                    "Memory Management",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          </div>
         </div>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+        <section className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-semibold text-slate-900">BST vs Heap</h2>
+            <h2 className="text-lg font-semibold text-slate-900 sm:text-xl">BST vs Heap</h2>
             <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">
               Comparison
             </span>
           </div>
           <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200">
             <div className="grid grid-cols-3 bg-slate-100 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-              <div className="px-4 py-3">Aspect</div>
-              <div className="px-4 py-3">BST</div>
-              <div className="px-4 py-3">Heap</div>
+              <div className="px-3 py-2">Aspect</div>
+              <div className="px-3 py-2">BST</div>
+              <div className="px-3 py-2">Heap</div>
             </div>
             {[
               {
@@ -899,9 +923,9 @@ export default function HeapPage() {
                   index % 2 === 0 ? "bg-white" : "bg-slate-50"
                 }`}
               >
-                <div className="px-4 py-3 font-semibold text-slate-700">{row.aspect}</div>
-                <div className="px-4 py-3 text-slate-600">{row.bst}</div>
-                <div className="px-4 py-3 text-slate-600">{row.heap}</div>
+                <div className="px-3 py-2 font-semibold text-slate-700">{row.aspect}</div>
+                <div className="px-3 py-2 text-slate-600">{row.bst}</div>
+                <div className="px-3 py-2 text-slate-600">{row.heap}</div>
               </div>
             ))}
           </div>
