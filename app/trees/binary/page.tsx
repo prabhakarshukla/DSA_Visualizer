@@ -2,19 +2,11 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Search, RotateCcw, PlayCircle } from "lucide-react";
+import { AlertTriangle, PlayCircle, RotateCcw, Search } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
-type OperationKey =
-  | "insert"
-  | "delete"
-  | "search"
-  | "inorder"
-  | "preorder"
-  | "postorder"
-  | "levelorder"
-  | "reset"
-  | "idle";
+type TraversalType = "inorder" | "preorder" | "postorder" | "levelorder";
+type OperationKey = TraversalType | "insert" | "delete" | "search" | "reset" | "idle";
 
 type ExplanationData = {
   operation: string;
@@ -26,6 +18,8 @@ type ExplanationData = {
 };
 
 const defaultTree: Array<string | null> = ["10", "5", "20", "2", "8"];
+const baseTraversalDelay = 900;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const pseudocodeMap: Record<OperationKey, string[]> = {
   insert: [
@@ -76,16 +70,25 @@ const serializeTree = (arr: Array<string | null>) => {
   return parts.length === 0 ? "EMPTY" : parts.join(" ");
 };
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export default function BinaryTreePage() {
   const [tree, setTree] = useState<Array<string | null>>(defaultTree);
   const [valueInput, setValueInput] = useState("");
   const [activeOperation, setActiveOperation] = useState<OperationKey>("idle");
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
-  const [traversalOrder, setTraversalOrder] = useState<string>("-");
+  const [traversalOrder, setTraversalOrder] = useState("-");
+  const [visitedOrder, setVisitedOrder] = useState<string[]>([]);
   const [showNotFound, setShowNotFound] = useState(false);
+
+  const [traversalSpeed, setTraversalSpeed] = useState(1);
+  const [isStepMode, setIsStepMode] = useState(false);
+  const [traversalStatus, setTraversalStatus] = useState<"idle" | "running" | "paused" | "completed">("idle");
+  const [currentTraversalType, setCurrentTraversalType] = useState<TraversalType | null>(null);
+  const [activeTraversalIndices, setActiveTraversalIndices] = useState<number[]>([]);
+  const [traversalStep, setTraversalStep] = useState(0);
+
   const traversalTokenRef = useRef(0);
+  const pauseRef = useRef(false);
+  const explanationRef = useRef<ExplanationData | null>(null);
 
   const [explanation, setExplanation] = useState<ExplanationData>({
     operation: "Overview",
@@ -94,13 +97,14 @@ export default function BinaryTreePage() {
     steps: [
       "Insert level-order empty position par hota hai.",
       "Delete me structure maintain karne ke liye replacement use karte hain.",
-      "Traversal orders exam me frequently pooche jate hain.",
+      "Traversals exam me frequently pooche jate hain.",
     ],
     finalTree: serializeTree(defaultTree),
     timeComplexity: "Depends on operation",
     examNote: "Binary Tree aur BST alag concepts hain; Binary Tree me ordering rule mandatory nahi hai.",
   });
 
+  explanationRef.current = explanation;
   const pseudocode = useMemo(() => pseudocodeMap[activeOperation], [activeOperation]);
 
   const nodes = useMemo(() => {
@@ -189,50 +193,86 @@ export default function BinaryTreePage() {
     return acc;
   };
 
-  const runTraversal = async (type: "inorder" | "preorder" | "postorder" | "levelorder") => {
+  const getTraversalIndices = (type: TraversalType) => {
+    const indices: number[] = [];
+    if (type === "inorder") getInorderIndices(0, indices);
+    else if (type === "preorder") getPreorderIndices(0, indices);
+    else if (type === "postorder") getPostorderIndices(0, indices);
+    else indices.push(...getLevelOrderIndices());
+    return indices;
+  };
+
+  const playFromStep = async (type: TraversalType, indices: number[], startStep: number, token: number) => {
+    setTraversalStatus("running");
+    for (let i = startStep; i < indices.length; i += 1) {
+      if (traversalTokenRef.current !== token) return;
+
+      while (pauseRef.current) {
+        if (traversalTokenRef.current !== token) return;
+        await sleep(40);
+      }
+
+      const idx = indices[i];
+      setHighlightIndex(idx);
+      setTraversalStep(i + 1);
+      setVisitedOrder((prev) => {
+        if (prev.length > i) return prev;
+        return [...prev, tree[idx] as string];
+      });
+
+      const totalDelay = baseTraversalDelay / traversalSpeed;
+      let elapsed = 0;
+      while (elapsed < totalDelay) {
+        if (traversalTokenRef.current !== token) return;
+        if (pauseRef.current) break;
+        await sleep(40);
+        elapsed += 40;
+      }
+      if (pauseRef.current) {
+        i -= 1;
+      }
+    }
+    setTraversalStatus("completed");
+  };
+
+  const runTraversal = async (type: TraversalType) => {
     setActiveOperation(type);
     setShowNotFound(false);
 
     if (tree.every((node) => node === null)) {
       setValidationExplanation(type, "Tree empty hai. Traversal run nahi ho sakta.");
       setTraversalOrder("-");
+      setVisitedOrder([]);
+      setTraversalStatus("idle");
       return;
     }
 
-    let indices: number[] = [];
-    if (type === "inorder") {
-      getInorderIndices(0, indices);
-    } else if (type === "preorder") {
-      getPreorderIndices(0, indices);
-    } else if (type === "postorder") {
-      getPostorderIndices(0, indices);
-    } else {
-      indices = getLevelOrderIndices();
-    }
-
+    const indices = getTraversalIndices(type);
     const values = indices.map((idx) => tree[idx] as string);
     setTraversalOrder(values.join(" -> "));
+    setVisitedOrder([]);
+    setTraversalStep(0);
+    setHighlightIndex(null);
+    setActiveTraversalIndices(indices);
+    setCurrentTraversalType(type);
 
     const token = traversalTokenRef.current + 1;
     traversalTokenRef.current = token;
-    for (const idx of indices) {
-      if (traversalTokenRef.current !== token) return;
-      setHighlightIndex(idx);
-      await sleep(420);
-    }
+    pauseRef.current = isStepMode;
+    setTraversalStatus(isStepMode ? "paused" : "running");
 
-    const labels: Record<typeof type, string> = {
+    const labels: Record<TraversalType, string> = {
       inorder: "Inorder Traversal",
       preorder: "Preorder Traversal",
       postorder: "Postorder Traversal",
       levelorder: "Level Order Traversal",
     };
 
-    const concepts: Record<typeof type, string> = {
-      inorder: "Inorder me Left -> Root -> Right pattern follow hota hai.",
-      preorder: "Preorder me Root -> Left -> Right order follow hota hai.",
-      postorder: "Postorder me Left -> Right -> Root order hota hai.",
-      levelorder: "Level Order me nodes level-by-level visit hote hain.",
+    const concepts: Record<TraversalType, string> = {
+      inorder: "Inorder traversal me pehle LEFT subtree visit hota hai, phir ROOT node, aur finally RIGHT subtree.",
+      preorder: "Preorder traversal me ROOT pehle visit hota hai, phir LEFT aur RIGHT subtree.",
+      postorder: "Postorder traversal me LEFT aur RIGHT pehle visit hote hain, ROOT end me aata hai.",
+      levelorder: "Level Order traversal me nodes level-by-level visit hote hain using queue style flow.",
     };
 
     setExplanation({
@@ -247,12 +287,61 @@ export default function BinaryTreePage() {
       timeComplexity: "O(n)",
       examNote: "Traversal orders recursion aur tree problems ka base banate hain.",
     });
+
+    if (!isStepMode) {
+      await playFromStep(type, indices, 0, token);
+    }
+  };
+
+  const pauseTraversal = () => {
+    if (traversalStatus !== "running") return;
+    pauseRef.current = true;
+    setTraversalStatus("paused");
+  };
+
+  const resumeTraversal = async () => {
+    if (isStepMode || traversalStatus !== "paused" || !currentTraversalType) return;
+    pauseRef.current = false;
+    const token = traversalTokenRef.current;
+    await playFromStep(currentTraversalType, activeTraversalIndices, traversalStep, token);
+  };
+
+  const restartTraversal = async () => {
+    if (!currentTraversalType) return;
+    traversalTokenRef.current += 1;
+    setHighlightIndex(null);
+    setVisitedOrder([]);
+    setTraversalStep(0);
+    pauseRef.current = false;
+    await runTraversal(currentTraversalType);
+  };
+
+  const nextStepTraversal = () => {
+    if (!isStepMode || activeTraversalIndices.length === 0 || traversalStatus === "completed") return;
+    const idx = activeTraversalIndices[traversalStep];
+    if (idx === undefined) return;
+    setHighlightIndex(idx);
+    setVisitedOrder((prev) => [...prev, tree[idx] as string]);
+    const next = traversalStep + 1;
+    setTraversalStep(next);
+    setTraversalStatus(next >= activeTraversalIndices.length ? "completed" : "paused");
+  };
+
+  const clearTraversalPlayback = () => {
+    traversalTokenRef.current += 1;
+    pauseRef.current = false;
+    setTraversalStatus("idle");
+    setCurrentTraversalType(null);
+    setActiveTraversalIndices([]);
+    setTraversalStep(0);
+    setVisitedOrder([]);
+    setTraversalOrder("-");
   };
 
   const handleInsert = () => {
     setActiveOperation("insert");
     setShowNotFound(false);
-    traversalTokenRef.current += 1;
+    clearTraversalPlayback();
     const value = valueInput.trim();
     if (value === "") {
       setValidationExplanation("insert", "Please enter a node value first.");
@@ -271,7 +360,6 @@ export default function BinaryTreePage() {
 
     const final = trimTrailingNulls(next);
     setTree(final);
-    setTraversalOrder("-");
     setExplanation({
       operation: "Insert Node",
       concept: "Binary Tree me insertion ke liye strict sorting rule mandatory nahi hota.",
@@ -289,7 +377,7 @@ export default function BinaryTreePage() {
   const handleDelete = () => {
     setActiveOperation("delete");
     setShowNotFound(false);
-    traversalTokenRef.current += 1;
+    clearTraversalPlayback();
     const value = valueInput.trim();
     if (value === "") {
       setValidationExplanation("delete", "Please enter a node value first.");
@@ -322,7 +410,6 @@ export default function BinaryTreePage() {
     const final = trimTrailingNulls(next);
     setTree(final);
     setHighlightIndex(target < final.length ? target : null);
-    setTraversalOrder("-");
     setExplanation({
       operation: "Delete Node",
       concept: "Delete me node remove karke tree structure connected rakhna important hota hai.",
@@ -340,7 +427,7 @@ export default function BinaryTreePage() {
   const handleSearch = async () => {
     setActiveOperation("search");
     setShowNotFound(false);
-    traversalTokenRef.current += 1;
+    clearTraversalPlayback();
     const value = valueInput.trim();
     if (value === "") {
       setValidationExplanation("search", "Please enter a node value first.");
@@ -354,7 +441,7 @@ export default function BinaryTreePage() {
     for (const idx of order) {
       if (traversalTokenRef.current !== token) return;
       setHighlightIndex(idx);
-      await sleep(280);
+      await sleep(300);
       if (tree[idx] === value) {
         foundIndex = idx;
         break;
@@ -394,12 +481,11 @@ export default function BinaryTreePage() {
 
   const handleReset = () => {
     setActiveOperation("reset");
-    traversalTokenRef.current += 1;
     setTree(defaultTree);
     setValueInput("");
     setHighlightIndex(null);
-    setTraversalOrder("-");
     setShowNotFound(false);
+    clearTraversalPlayback();
     setExplanation({
       operation: "Reset Tree",
       concept: "Tree default structure par restore hota hai taki fresh practice start ho sake.",
@@ -418,12 +504,8 @@ export default function BinaryTreePage() {
     <main className="min-h-screen bg-[#f4f7fb] px-4 py-10 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-          <Link href="/trees" className="text-blue-700 hover:text-blue-800">
-            &larr; Back to Trees overview
-          </Link>
-          <Link href="/" className="text-blue-700 hover:text-blue-800">
-            Back to homepage
-          </Link>
+          <Link href="/trees" className="text-blue-700 hover:text-blue-800">&larr; Back to Trees overview</Link>
+          <Link href="/" className="text-blue-700 hover:text-blue-800">Back to homepage</Link>
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
@@ -441,52 +523,56 @@ export default function BinaryTreePage() {
               placeholder="Enter node value"
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring"
             />
-            <button
-              onClick={handleReset}
-              className="inline-flex items-center justify-center gap-1 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2.5 text-sm font-medium text-cyan-700 hover:bg-cyan-100"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Reset Tree
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2.5 text-sm font-medium text-cyan-700 hover:bg-cyan-100">
+              <RotateCcw className="h-4 w-4" />Reset Tree
             </button>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <button onClick={handleInsert} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800">
-              Insert Node
-            </button>
-            <button onClick={handleDelete} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              Delete Node
-            </button>
-            <button
-              onClick={handleSearch}
-              className="inline-flex items-center justify-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500"
-            >
-              <Search className="h-4 w-4" />
-              Search Node
-            </button>
-            <button
-              onClick={handleReset}
-              className="inline-flex items-center justify-center gap-1 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Reset Tree
-            </button>
+            <button onClick={handleInsert} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800">Insert Node</button>
+            <button onClick={handleDelete} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Delete Node</button>
+            <button onClick={() => void handleSearch()} className="inline-flex items-center justify-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500"><Search className="h-4 w-4" />Search Node</button>
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100"><RotateCcw className="h-4 w-4" />Reset Tree</button>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <button onClick={() => runTraversal("inorder")} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              Inorder Traversal
-            </button>
-            <button onClick={() => runTraversal("preorder")} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              Preorder Traversal
-            </button>
-            <button onClick={() => runTraversal("postorder")} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              Postorder Traversal
-            </button>
-            <button onClick={() => runTraversal("levelorder")} className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              <PlayCircle className="h-4 w-4" />
-              Level Order Traversal
-            </button>
+            <button onClick={() => void runTraversal("inorder")} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Inorder Traversal</button>
+            <button onClick={() => void runTraversal("preorder")} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Preorder Traversal</button>
+            <button onClick={() => void runTraversal("postorder")} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Postorder Traversal</button>
+            <button onClick={() => void runTraversal("levelorder")} className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"><PlayCircle className="h-4 w-4" />Level Order Traversal</button>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-900">Traversal Controls</p>
+            <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Traversal Speed ({traversalSpeed.toFixed(2)}x)</label>
+                <input type="range" min="0.25" max="2" step="0.25" value={traversalSpeed} onChange={(e) => setTraversalSpeed(Number(e.target.value))} className="mt-2 w-full accent-cyan-600" />
+                <div className="mt-2 flex gap-2">
+                  <button onClick={() => setTraversalSpeed(0.5)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">Slow</button>
+                  <button onClick={() => setTraversalSpeed(1)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">Normal</button>
+                  <button onClick={() => setTraversalSpeed(1.75)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">Fast</button>
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Playback</label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button onClick={pauseTraversal} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700">Pause</button>
+                  <button onClick={() => void resumeTraversal()} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700">Resume</button>
+                  <button onClick={() => void restartTraversal()} className="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-medium text-cyan-700">Restart Traversal</button>
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                  <input id="stepmode" type="checkbox" checked={isStepMode} onChange={(e) => setIsStepMode(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-cyan-600" />
+                  <label htmlFor="stepmode" className="font-medium">Step-by-Step mode</label>
+                  <button onClick={nextStepTraversal} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">Next Step</button>
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-1 gap-2 text-xs font-medium sm:grid-cols-3">
+              <span className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 text-blue-700">Status: {traversalStatus === "idle" ? "Idle" : traversalStatus === "running" ? "Running" : traversalStatus === "paused" ? "Paused" : "Completed"}</span>
+              <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-emerald-700">Step {Math.min(traversalStep, activeTraversalIndices.length)} / {activeTraversalIndices.length || 0}</span>
+              <span className="rounded-lg border border-cyan-200 bg-cyan-50 px-2 py-1.5 text-cyan-700">Visited: {visitedOrder.length === 0 ? "-" : visitedOrder.join(" -> ")}</span>
+            </div>
           </div>
         </section>
 
@@ -494,18 +580,13 @@ export default function BinaryTreePage() {
           <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
             <h2 className="text-lg font-semibold text-slate-900">Tree Visual</h2>
             <p className="mt-1 text-xs font-medium text-blue-700">Traversal output: {traversalOrder}</p>
+            <p className="mt-1 text-xs font-medium text-emerald-700">Current visited node: {highlightIndex !== null && tree[highlightIndex] !== null ? tree[highlightIndex] : "-"}</p>
 
             <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <AnimatePresence>
                 {showNotFound && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="mb-3 flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700"
-                  >
-                    <AlertTriangle className="h-4 w-4" />
-                    Node not found in tree.
+                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="mb-3 flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700">
+                    <AlertTriangle className="h-4 w-4" />Node not found in tree.
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -513,48 +594,18 @@ export default function BinaryTreePage() {
               <div className="relative w-full overflow-x-auto" style={{ minHeight: `${treeHeight}px` }}>
                 <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                   {edges.map((edge) => (
-                    <motion.line
-                      key={edge.key}
-                      x1={edge.x1}
-                      y1={edge.y1 + 2}
-                      x2={edge.x2}
-                      y2={edge.y2 - 2}
-                      stroke="#94a3b8"
-                      strokeWidth="0.5"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.35 }}
-                    />
+                    <motion.line key={edge.key} x1={edge.x1} y1={edge.y1 + 2} x2={edge.x2} y2={edge.y2 - 2} stroke="#94a3b8" strokeWidth="0.5" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.35 }} />
                   ))}
                 </svg>
 
                 {nodes.map((node) => (
-                  <motion.div
-                    key={`node-${node.index}-${node.value}`}
-                    layout
-                    initial={{ opacity: 0, scale: 0.85 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2"
-                    style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                  >
-                    <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold shadow-sm ${
-                        highlightIndex === node.index
-                          ? "border-emerald-400 bg-emerald-100 text-emerald-800"
-                          : "border-cyan-200 bg-cyan-50 text-slate-800"
-                      }`}
-                    >
-                      {node.value}
-                    </div>
+                  <motion.div key={`node-${node.index}-${node.value}`} layout initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={{ type: "spring", stiffness: 260, damping: 20 }} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${node.x}%`, top: `${node.y}%` }}>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold shadow-sm ${highlightIndex === node.index ? "border-emerald-400 bg-emerald-100 text-emerald-800" : "border-cyan-200 bg-cyan-50 text-slate-800"}`}>{node.value}</div>
                     <p className="mt-1 text-center text-[10px] font-medium text-slate-500">idx {node.index}</p>
                   </motion.div>
                 ))}
 
-                {nodes.length === 0 && (
-                  <div className="flex h-full min-h-[240px] items-center justify-center text-sm text-slate-500">Tree is empty</div>
-                )}
+                {nodes.length === 0 && <div className="flex h-full min-h-[240px] items-center justify-center text-sm text-slate-500">Tree is empty</div>}
               </div>
             </div>
 
@@ -583,45 +634,19 @@ export default function BinaryTreePage() {
             <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
               <h3 className="text-lg font-semibold text-slate-900">Step Explanation</h3>
               <div className="mt-4 space-y-3 text-sm">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Operation</p>
-                  <p className="mt-1 font-medium text-slate-800">{explanation.operation}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Concept</p>
-                  <p className="mt-1 leading-6 text-slate-700">{explanation.concept}</p>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Step-by-step process</p>
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">
-                    {explanation.steps.map((step) => (
-                      <li key={step}>{step}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Final tree</p>
-                  <p className="mt-1 font-mono text-slate-800">{explanation.finalTree}</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Time complexity</p>
-                  <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                    {explanation.timeComplexity}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Exam note</p>
-                  <p className="mt-1 leading-6 text-slate-700">{explanation.examNote}</p>
-                </div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Operation</p><p className="mt-1 font-medium text-slate-800">{explanation.operation}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Concept</p><p className="mt-1 leading-6 text-slate-700">{explanation.concept}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Step-by-step process</p><ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">{explanation.steps.map((step) => (<li key={step}>{step}</li>))}</ul></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Final tree</p><p className="mt-1 font-mono text-slate-800">{explanation.finalTree}</p></div>
+                <div className="flex flex-wrap items-center gap-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Time complexity</p><span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{explanation.timeComplexity}</span></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Exam note</p><p className="mt-1 leading-6 text-slate-700">{explanation.examNote}</p></div>
               </div>
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-slate-900 p-6 text-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.2)]">
               <h3 className="text-lg font-semibold text-cyan-200">Pseudocode</h3>
               <div className="mt-3 space-y-1 font-mono text-sm leading-6 text-slate-100/95">
-                {pseudocode.map((line, idx) => (
-                  <p key={`${line}-${idx}`}>{line === "" ? " " : line}</p>
-                ))}
+                {pseudocode.map((line, idx) => (<p key={`${line}-${idx}`}>{line === "" ? " " : line}</p>))}
               </div>
             </div>
           </div>
