@@ -10,20 +10,20 @@ export function Navbar() {
       initial={{ y: -10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className="sticky top-0 z-30 border-b border-slate-200/70 bg-[#f7fafc]/90 backdrop-blur"
+      className="sticky top-0 z-30 border-b border-[#D8CCA3] bg-[#F1E8C7]/90 backdrop-blur"
     >
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="rounded-xl bg-slate-900 p-2 text-cyan-300 shadow-sm">
+          <span className="rounded-xl bg-[#4B5320] p-2 text-[#F7F1DD] shadow-sm">
             <Binary className="h-4 w-4" />
           </span>
           <div>
-            <p className="text-sm font-semibold tracking-tight text-slate-900">DSA Visualizer Lite</p>
-            <p className="text-xs text-slate-600">Interactive DSA Playground</p>
+            <p className="text-sm font-semibold tracking-tight text-[#4B5320]">DSA Visualizer Lite</p>
+            <p className="text-xs text-[#9CA763]">Interactive DSA Playground</p>
           </div>
         </Link>
 
-        <div className="hidden items-center gap-2 rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-medium text-cyan-800 sm:inline-flex">
+        <div className="hidden items-center gap-2 rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#7D8F3B] sm:inline-flex">
           <Waypoints className="h-3.5 w-3.5" />
           Visual thinking first
           <Sparkles className="h-3.5 w-3.5" />

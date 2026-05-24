@@ -93,37 +93,37 @@ const whyItems = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#f4f7fb] text-slate-900">
+    <div className="min-h-screen bg-[#F1E8C7] text-[#4B5320]">
       <Navbar />
 
       <main className="pb-16">
         <HeroSection />
 
         <section className="px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto w-full max-w-6xl rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] sm:p-7">
+          <div className="mx-auto w-full max-w-6xl rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/80 p-5 shadow-[0_10px_30px_rgba(75,83,32,0.06)] sm:p-7">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Algorithm Path</h2>
-                <p className="mt-1 text-sm text-slate-600 sm:text-base">
+                <h2 className="text-2xl font-bold tracking-tight text-[#4B5320] sm:text-3xl">Algorithm Path</h2>
+                <p className="mt-1 text-sm text-[#9CA763] sm:text-base">
                   Move through connected learning steps from arrays to advanced patterns.
                 </p>
-                <p className="mt-2 inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                <p className="mt-2 inline-flex items-center rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1 text-xs font-semibold text-[#7D8F3B]">
                   4 Visualizers Complete · Fully Interactive
                 </p>
               </div>
-              <BarChart3 className="hidden h-5 w-5 text-cyan-600 sm:block" />
+              <BarChart3 className="hidden h-5 w-5 text-[#7D8F3B] sm:block" />
             </div>
 
             <div className="mb-4 hidden items-center gap-2 px-2 md:flex">
               {modules.slice(0, -1).map((module) => (
                 <div key={`${module.title}-connector`} className="group flex flex-1 items-center">
-                  <span className="mr-2 text-xs font-medium text-slate-500">{module.title}</span>
-                  <span className="h-px flex-1 bg-gradient-to-r from-cyan-300 via-blue-300 to-transparent transition group-hover:from-cyan-400 group-hover:via-blue-400" />
+                  <span className="mr-2 text-xs font-medium text-[#9CA763]">{module.title}</span>
+                  <span className="h-px flex-1 bg-gradient-to-r from-[#AAB76A] via-[#7D8F3B] to-transparent transition group-hover:from-[#7D8F3B] group-hover:via-[#4B5320]" />
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
+            <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-7">
               {modules.map((module) => (
                 <VisualizerCard
                   key={module.title}
@@ -140,13 +140,13 @@ export default function Home() {
         </section>
 
         <section className="px-4 pt-4 sm:px-6 lg:px-8">
-          <div className="mx-auto w-full max-w-6xl rounded-3xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800 p-6 text-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.2)]">
+          <div className="mx-auto w-full max-w-6xl rounded-3xl border border-[#D8CCA3] bg-gradient-to-r from-[#4B5320] to-[#7D8F3B] p-6 text-[#F7F1DD] shadow-[0_10px_30px_rgba(75,83,32,0.2)]">
             <h3 className="text-xl font-semibold tracking-tight">Why visualize?</h3>
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
               {whyItems.map((item) => (
-                <div key={item.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-sm font-semibold text-cyan-200">{item.title}</p>
-                  <p className="mt-1 text-sm text-slate-200/90">{item.copy}</p>
+                <div key={item.title} className="rounded-2xl border border-[#AAB76A]/30 bg-[#AAB76A]/10 p-4">
+                  <p className="text-sm font-semibold text-[#AAB76A]">{item.title}</p>
+                  <p className="mt-1 text-sm text-[#F7F1DD]/90">{item.copy}</p>
                 </div>
               ))}
             </div>

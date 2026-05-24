@@ -499,76 +499,76 @@ export default function BstPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f4f7fb] px-4 py-10 text-slate-900 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#F1E8C7] px-4 py-10 text-[#4B5320] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-          <Link href="/trees" className="text-blue-700 hover:text-blue-800">&larr; Back to Trees overview</Link>
-          <Link href="/" className="text-blue-700 hover:text-blue-800">Back to homepage</Link>
+          <Link href="/trees" className="text-[#7D8F3B] hover:text-[#4B5320]">&larr; Back to Trees overview</Link>
+          <Link href="/" className="text-[#7D8F3B] hover:text-[#4B5320]">Back to homepage</Link>
         </div>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Binary Search Tree Visualizer</h1>
-          <p className="mt-3 max-w-3xl text-slate-600">BST me rule fixed hota hai: Left subtree &lt; Root &lt; Right subtree. Comparisons dekhkar search/insert/delete samjho.</p>
+        <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
+          <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Binary Search Tree Visualizer</h1>
+          <p className="mt-3 max-w-3xl text-[#9CA763]">BST me rule fixed hota hai: Left subtree &lt; Root &lt; Right subtree. Comparisons dekhkar search/insert/delete samjho.</p>
 
           <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto]">
-            <input type="number" value={valueInput} onChange={(e) => setValueInput(e.target.value)} placeholder="Enter node value" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring" />
-            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2.5 text-sm font-medium text-cyan-700 hover:bg-cyan-100"><RotateCcw className="h-4 w-4" />Reset Tree</button>
+            <input type="number" value={valueInput} onChange={(e) => setValueInput(e.target.value)} placeholder="Enter node value" className="w-full rounded-xl border border-[#D8CCA3] bg-[#F1E8C7] px-4 py-2.5 text-sm outline-none ring-[#AAB76A] transition focus:ring" />
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2.5 text-sm font-medium text-[#7D8F3B] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset Tree</button>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <button onClick={() => void handleInsert()} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800">Insert Node</button>
-            <button onClick={() => void handleDelete()} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Delete Node</button>
-            <button onClick={() => void handleSearch()} className="inline-flex items-center justify-center gap-1 rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500"><Search className="h-4 w-4" />Search Node</button>
-            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100"><RotateCcw className="h-4 w-4" />Reset Tree</button>
+            <button onClick={() => void handleInsert()} className="rounded-xl bg-[#4B5320] px-3 py-2 text-sm font-medium text-white hover:bg-[#7D8F3B]">Insert Node</button>
+            <button onClick={() => void handleDelete()} className="rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F1E8C7]">Delete Node</button>
+            <button onClick={() => void handleSearch()} className="inline-flex items-center justify-center gap-1 rounded-xl bg-[#7D8F3B] px-3 py-2 text-sm font-medium text-white hover:bg-[#F7F1DD]0"><Search className="h-4 w-4" />Search Node</button>
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#7D8F3B] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset Tree</button>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <button onClick={() => void runTraversal("inorder")} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Inorder</button>
-            <button onClick={() => void runTraversal("preorder")} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Preorder</button>
-            <button onClick={() => void runTraversal("postorder")} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Postorder</button>
-            <button onClick={() => void runTraversal("levelorder")} className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"><PlayCircle className="h-4 w-4" />Level Order</button>
+            <button onClick={() => void runTraversal("inorder")} className="rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F1E8C7]">Inorder</button>
+            <button onClick={() => void runTraversal("preorder")} className="rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F1E8C7]">Preorder</button>
+            <button onClick={() => void runTraversal("postorder")} className="rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F1E8C7]">Postorder</button>
+            <button onClick={() => void runTraversal("levelorder")} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F1E8C7]"><PlayCircle className="h-4 w-4" />Level Order</button>
           </div>
 
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm font-semibold text-slate-900">Traversal Controls</p>
+          <div className="mt-4 rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
+            <p className="text-sm font-semibold text-[#4B5320]">Traversal Controls</p>
             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Traversal Speed ({traversalSpeed.toFixed(2)}x)</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Traversal Speed ({traversalSpeed.toFixed(2)}x)</label>
                 <input type="range" min="0.25" max="2" step="0.25" value={traversalSpeed} onChange={(e) => setTraversalSpeed(Number(e.target.value))} className="mt-2 w-full accent-cyan-600" />
                 <div className="mt-2 flex gap-2">
-                  <button onClick={() => setTraversalSpeed(0.5)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">Slow</button>
-                  <button onClick={() => setTraversalSpeed(1)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">Normal</button>
-                  <button onClick={() => setTraversalSpeed(1.75)} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">Fast</button>
+                  <button onClick={() => setTraversalSpeed(0.5)} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-2.5 py-1 text-xs font-medium text-[#4B5320]">Slow</button>
+                  <button onClick={() => setTraversalSpeed(1)} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-2.5 py-1 text-xs font-medium text-[#4B5320]">Normal</button>
+                  <button onClick={() => setTraversalSpeed(1.75)} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-2.5 py-1 text-xs font-medium text-[#4B5320]">Fast</button>
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Playback</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Playback</label>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <button onClick={pauseTraversal} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700">Pause</button>
-                  <button onClick={() => void resumeTraversal()} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700">Resume</button>
-                  <button onClick={() => void restartTraversal()} className="rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-xs font-medium text-cyan-700">Restart Traversal</button>
+                  <button onClick={pauseTraversal} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#4B5320]">Pause</button>
+                  <button onClick={() => void resumeTraversal()} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#4B5320]">Resume</button>
+                  <button onClick={() => void restartTraversal()} className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#7D8F3B]">Restart Traversal</button>
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                  <input id="bst-stepmode" type="checkbox" checked={isStepMode} onChange={(e) => setIsStepMode(e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-cyan-600" />
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#9CA763]">
+                  <input id="bst-stepmode" type="checkbox" checked={isStepMode} onChange={(e) => setIsStepMode(e.target.checked)} className="h-4 w-4 rounded border-[#D8CCA3] text-[#7D8F3B]" />
                   <label htmlFor="bst-stepmode" className="font-medium">Step-by-Step mode</label>
-                  <button onClick={nextStepTraversal} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">Next Step</button>
+                  <button onClick={nextStepTraversal} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-2.5 py-1 text-xs font-medium text-[#4B5320]">Next Step</button>
                 </div>
               </div>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-2 text-xs font-medium sm:grid-cols-3">
-              <span className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 text-blue-700">Status: {traversalStatus === "idle" ? "Idle" : traversalStatus === "running" ? "Running" : traversalStatus === "paused" ? "Paused" : "Completed"}</span>
-              <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-emerald-700">Step {Math.min(traversalStep, activeTraversalIds.length)} / {activeTraversalIds.length || 0}</span>
-              <span className="rounded-lg border border-cyan-200 bg-cyan-50 px-2 py-1.5 text-cyan-700">Visited: {visitedOrder.length === 0 ? "-" : visitedOrder.join(" -> ")}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#7D8F3B]">Status: {traversalStatus === "idle" ? "Idle" : traversalStatus === "running" ? "Running" : traversalStatus === "paused" ? "Paused" : "Completed"}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#7D8F3B]">Step {Math.min(traversalStep, activeTraversalIds.length)} / {activeTraversalIds.length || 0}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#7D8F3B]">Visited: {visitedOrder.length === 0 ? "-" : visitedOrder.join(" -> ")}</span>
             </div>
           </div>
         </section>
 
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.3fr_1fr]">
-          <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
-            <h2 className="text-lg font-semibold text-slate-900">BST Visual</h2>
-            <p className="mt-1 text-xs font-medium text-blue-700">Traversal output: {traversalOrder}</p>
-            <p className="mt-1 text-xs font-medium text-emerald-700">Current visited node: {highlightId ? getNodeById(root, highlightId)?.value ?? "-" : "-"}</p>
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
+            <h2 className="text-lg font-semibold text-[#4B5320]">BST Visual</h2>
+            <p className="mt-1 text-xs font-medium text-[#7D8F3B]">Traversal output: {traversalOrder}</p>
+            <p className="mt-1 text-xs font-medium text-[#7D8F3B]">Current visited node: {highlightId ? getNodeById(root, highlightId)?.value ?? "-" : "-"}</p>
+            <div className="mt-4 rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
               <AnimatePresence>
                 {showNotFound && (
                   <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="mb-3 flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700">
@@ -576,9 +576,9 @@ export default function BstPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
-              <div className="mb-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">BST Decision Path</p>
-                <ul className="mt-1 space-y-1 text-sm text-blue-800">
+              <div className="mb-3 rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#7D8F3B]">BST Decision Path</p>
+                <ul className="mt-1 space-y-1 text-sm text-[#4B5320]">
                   {comparisonLog.length === 0 ? <li>-</li> : comparisonLog.map((line) => <li key={line}>{line}</li>)}
                 </ul>
               </div>
@@ -590,32 +590,32 @@ export default function BstPage() {
                 </svg>
                 {visual.nodes.map((node) => (
                   <motion.div key={node.id} layout initial={{ opacity: 0, scale: 0.86 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.82 }} transition={{ type: "spring", stiffness: 260, damping: 20 }} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${node.x}%`, top: `${node.y}%` }}>
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold shadow-sm ${highlightId === node.id ? "border-emerald-400 bg-emerald-100 text-emerald-800" : "border-cyan-200 bg-cyan-50 text-slate-800"}`}>{node.value}</div>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold shadow-sm ${highlightId === node.id ? "border-[#7D8F3B] bg-[#AAB76A] text-white" : "border-[#AAB76A] bg-[#F7F1DD] text-[#4B5320]"}`}>{node.value}</div>
                   </motion.div>
                 ))}
-                {visual.nodes.length === 0 && <div className="flex h-full min-h-[240px] items-center justify-center text-sm text-slate-500">BST is empty</div>}
+                {visual.nodes.length === 0 && <div className="flex h-full min-h-[240px] items-center justify-center text-sm text-[#9CA763]">BST is empty</div>}
               </div>
             </div>
-            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-sm font-semibold text-emerald-800">Key Concept</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-emerald-700">
+            <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
+              <p className="text-sm font-semibold text-[#7D8F3B]">Key Concept</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
                 <li>BST sorted ordering maintain karta hai.</li>
                 <li>Left subtree &lt; Root &lt; Right subtree.</li>
                 <li>Inorder traversal sorted sequence deta hai.</li>
                 <li>Average search complexity O(log n) hoti hai.</li>
               </ul>
             </div>
-            <div className="mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4">
-              <p className="text-sm font-semibold text-blue-800">Binary Tree vs BST</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-blue-700">
+            <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
+              <p className="text-sm font-semibold text-[#4B5320]">Binary Tree vs BST</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
                 <li>Binary Tree me ordering rule mandatory nahi hota; BST me strict ordering hoti hai.</li>
                 <li>BST search average me faster hoti hai due to subtree skipping.</li>
                 <li>BST ka inorder traversal sorted output deta hai.</li>
               </ul>
             </div>
-            <div className="mt-4 rounded-2xl border border-cyan-200 bg-cyan-50 p-4">
-              <p className="text-sm font-semibold text-cyan-800">Real-world Use Cases</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-cyan-700">
+            <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
+              <p className="text-sm font-semibold text-[#7D8F3B]">Real-world Use Cases</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
                 <li>Databases</li>
                 <li>Search systems</li>
                 <li>Dictionaries</li>
@@ -625,20 +625,20 @@ export default function BstPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4">
-            <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
-              <h3 className="text-lg font-semibold text-slate-900">Step Explanation</h3>
+            <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
+              <h3 className="text-lg font-semibold text-[#4B5320]">Step Explanation</h3>
               <div className="mt-4 space-y-3 text-sm">
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Operation</p><p className="mt-1 font-medium text-slate-800">{explanation.operation}</p></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Concept</p><p className="mt-1 leading-6 text-slate-700">{explanation.concept}</p></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Step-by-step process</p><ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">{explanation.steps.map((step) => (<li key={step}>{step}</li>))}</ul></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Final BST</p><p className="mt-1 font-mono text-slate-800">{explanation.finalBst}</p></div>
-                <div className="flex flex-wrap items-center gap-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Time complexity</p><span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{explanation.timeComplexity}</span></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Exam note</p><p className="mt-1 leading-6 text-slate-700">{explanation.examNote}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Operation</p><p className="mt-1 font-medium text-[#4B5320]">{explanation.operation}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Concept</p><p className="mt-1 leading-6 text-[#4B5320]">{explanation.concept}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Step-by-step process</p><ul className="mt-1 list-disc space-y-1 pl-5 text-[#4B5320]">{explanation.steps.map((step) => (<li key={step}>{step}</li>))}</ul></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Final BST</p><p className="mt-1 font-mono text-[#4B5320]">{explanation.finalBst}</p></div>
+                <div className="flex flex-wrap items-center gap-2"><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Time complexity</p><span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2.5 py-1 text-xs font-semibold text-[#7D8F3B]">{explanation.timeComplexity}</span></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Exam note</p><p className="mt-1 leading-6 text-[#4B5320]">{explanation.examNote}</p></div>
               </div>
             </div>
-            <div className="rounded-3xl border border-slate-200 bg-slate-900 p-6 text-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.2)]">
-              <h3 className="text-lg font-semibold text-cyan-200">Pseudocode</h3>
-              <div className="mt-3 space-y-1 font-mono text-sm leading-6 text-slate-100/95">
+            <div className="rounded-3xl border border-[#D8CCA3] bg-[#4B5320] p-6 text-[#F7F1DD] shadow-[0_10px_30px_rgba(15,23,42,0.2)]">
+              <h3 className="text-lg font-semibold text-[#AAB76A]">Pseudocode</h3>
+              <div className="mt-3 space-y-1 font-mono text-sm leading-6 text-[#F7F1DD]/95">
                 {pseudocode.map((line, idx) => (<p key={`${line}-${idx}`}>{line}</p>))}
               </div>
             </div>

@@ -415,15 +415,15 @@ export default function ArraysPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f4f7fb] px-4 py-10 text-slate-900 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#F1E8C7] px-4 py-10 text-[#4B5320] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
-        <Link href="/" className="inline-flex items-center text-sm font-medium text-blue-700 hover:text-blue-800">
+        <Link href="/" className="inline-flex items-center text-sm font-medium text-[#7D8F3B] hover:text-[#4B5320]">
           &larr; Back to homepage
         </Link>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Arrays Visualizer</h1>
-          <p className="mt-3 max-w-3xl text-slate-600">
+        <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)] sm:p-8">
+          <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Arrays Visualizer</h1>
+          <p className="mt-3 max-w-3xl text-[#9CA763]">
             Perform array operations interactively and watch how values shift across indexes in real time.
           </p>
 
@@ -433,58 +433,58 @@ export default function ArraysPage() {
               value={valueInput}
               onChange={(event) => setValueInput(event.target.value)}
               placeholder="Enter value"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring"
+              className="w-full rounded-xl border border-[#D8CCA3] bg-[#F1E8C7] px-4 py-2.5 text-sm text-[#4B5320] outline-none ring-[#AAB76A] transition focus:ring"
             />
             <input
               type="number"
               value={indexInput}
               onChange={(event) => setIndexInput(event.target.value)}
               placeholder="Enter index"
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none ring-cyan-300 transition focus:ring"
+              className="w-full rounded-xl border border-[#D8CCA3] bg-[#F1E8C7] px-4 py-2.5 text-sm text-[#4B5320] outline-none ring-[#AAB76A] transition focus:ring"
             />
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            <button onClick={handleInsertBeginning} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800">
+            <button onClick={handleInsertBeginning} className="rounded-xl bg-[#7D8F3B] px-3 py-2 text-sm font-medium text-white hover:bg-[#4B5320]">
               Insert at Beginning
             </button>
-            <button onClick={handleInsertEnd} className="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800">
+            <button onClick={handleInsertEnd} className="rounded-xl bg-[#7D8F3B] px-3 py-2 text-sm font-medium text-white hover:bg-[#4B5320]">
               Insert at End
             </button>
-            <button onClick={handleInsertIndex} className="rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500">
+            <button onClick={handleInsertIndex} className="rounded-xl bg-[#9CA763] px-3 py-2 text-sm font-medium text-white hover:bg-[#7D8F3B]">
               Insert at Index
             </button>
-            <button onClick={handleDeleteBeginning} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <button onClick={handleDeleteBeginning} className="rounded-xl border border-[#D8CCA3] bg-[#F1E8C7] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F7F1DD]">
               Delete at Beginning
             </button>
-            <button onClick={handleDeleteEnd} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <button onClick={handleDeleteEnd} className="rounded-xl border border-[#D8CCA3] bg-[#F1E8C7] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F7F1DD]">
               Delete at End
             </button>
-            <button onClick={handleDeleteIndex} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+            <button onClick={handleDeleteIndex} className="rounded-xl border border-[#D8CCA3] bg-[#F1E8C7] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F7F1DD]">
               Delete at Index
             </button>
-            <button onClick={handleSearch} className="inline-flex items-center justify-center gap-1 rounded-xl bg-emerald-500 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-400">
+            <button onClick={handleSearch} className="inline-flex items-center justify-center gap-1 rounded-xl bg-[#AAB76A] px-3 py-2 text-sm font-medium text-white hover:bg-[#9CA763]">
               <Search className="h-4 w-4" />
               Search Value
             </button>
-            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-medium text-cyan-700 hover:bg-cyan-100">
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#7D8F3B] hover:bg-[#F1E8C7]">
               <RotateCcw className="h-4 w-4" />
               Reset
             </button>
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
+        <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)] sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-slate-900">Array Visual Area</h2>
-            <div className="rounded-full border border-cyan-200 bg-cyan-50 px-3 py-1 text-xs font-medium text-cyan-700">
+            <h2 className="text-lg font-semibold text-[#4B5320]">Array Visual Area</h2>
+            <div className="rounded-full border border-[#AAB76A] bg-[#F1E8C7] px-3 py-1 text-xs font-medium text-[#7D8F3B]">
               Current length: {array.length}
             </div>
           </div>
 
-          <div className="mt-4 min-h-28 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="mt-4 min-h-28 rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
             {array.length === 0 ? (
-              <p className="text-sm text-slate-500">Array is empty.</p>
+              <p className="text-sm text-[#9CA763]">Array is empty.</p>
             ) : (
               <motion.div layout className="flex flex-wrap items-end gap-3">
                 <AnimatePresence>
@@ -499,15 +499,15 @@ export default function ArraysPage() {
                           opacity: 1,
                           y: 0,
                           scale: 1,
-                          backgroundColor: isHighlighted ? "#a7f3d0" : "#ecfeff",
-                          borderColor: isHighlighted ? "#10b981" : "#bae6fd",
+                          backgroundColor: isHighlighted ? "#AAB76A" : "#F7F1DD",
+                          borderColor: isHighlighted ? "#7D8F3B" : "#D8CCA3",
                         }}
                         exit={{ opacity: 0, y: -12, scale: 0.9 }}
                         transition={{ type: "spring", stiffness: 340, damping: 26 }}
                         className="rounded-xl border px-4 py-3 text-center shadow-sm"
                       >
-                        <p className="text-sm font-semibold text-slate-900">{value}</p>
-                        <p className="mt-1 text-xs text-slate-500">index {index}</p>
+                        <p className="text-sm font-semibold text-[#4B5320]">{value}</p>
+                        <p className="mt-1 text-xs text-[#9CA763]">index {index}</p>
                       </motion.div>
                     );
                   })}
@@ -516,9 +516,9 @@ export default function ArraysPage() {
             )}
           </div>
 
-          <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-            <p className="text-sm font-semibold text-emerald-800">Key Concept</p>
-            <p className="mt-1 text-sm text-emerald-700">
+          <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F1E8C7] p-4">
+            <p className="text-sm font-semibold text-[#7D8F3B]">Key Concept</p>
+            <p className="mt-1 text-sm text-[#9CA763]">
               Arrays contiguous memory locations me store hote hain, aur indexing 0 se start hoti hai. Isliye insert/delete
               middle ya beginning me karte time shifting ka cost aata hai.
             </p>
@@ -526,23 +526,23 @@ export default function ArraysPage() {
         </section>
 
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
-            <h3 className="text-lg font-semibold text-slate-900">Step Explanation</h3>
+          <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
+            <h3 className="text-lg font-semibold text-[#4B5320]">Step Explanation</h3>
 
             <div className="mt-4 space-y-3 text-sm">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Operation</p>
-                <p className="mt-1 font-medium text-slate-800">{explanation.operation}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Operation</p>
+                <p className="mt-1 font-medium text-[#4B5320]">{explanation.operation}</p>
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Concept</p>
-                <p className="mt-1 leading-6 text-slate-700">{explanation.concept}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Concept</p>
+                <p className="mt-1 leading-6 text-[#4B5320]">{explanation.concept}</p>
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Step-by-step process</p>
-                <ul className="mt-1 list-disc space-y-1 pl-5 text-slate-700">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Step-by-step process</p>
+                <ul className="mt-1 list-disc space-y-1 pl-5 text-[#4B5320]">
                   {explanation.steps.map((step) => (
                     <li key={step}>{step}</li>
                   ))}
@@ -550,27 +550,27 @@ export default function ArraysPage() {
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Final array</p>
-                <p className="mt-1 font-mono text-slate-800">{explanation.finalArray}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Final array</p>
+                <p className="mt-1 font-mono text-[#4B5320]">{explanation.finalArray}</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Time complexity</p>
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Time complexity</p>
+                <span className="rounded-full border border-[#AAB76A] bg-[#F1E8C7] px-2.5 py-1 text-xs font-semibold text-[#7D8F3B]">
                   {explanation.timeComplexity}
                 </span>
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Exam note</p>
-                <p className="mt-1 leading-6 text-slate-700">{explanation.examNote}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Exam note</p>
+                <p className="mt-1 leading-6 text-[#4B5320]">{explanation.examNote}</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-slate-900 p-6 text-slate-100 shadow-[0_10px_30px_rgba(15,23,42,0.2)]">
-            <h3 className="text-lg font-semibold text-cyan-200">Pseudocode</h3>
-            <div className="mt-3 space-y-1 font-mono text-sm leading-6 text-slate-100/95">
+          <div className="rounded-3xl border border-[#D8CCA3] bg-[#4B5320] p-6 text-[#F7F1DD] shadow-[0_10px_30px_rgba(75,83,32,0.2)]">
+            <h3 className="text-lg font-semibold text-[#AAB76A]">Pseudocode</h3>
+            <div className="mt-3 space-y-1 font-mono text-sm leading-6 text-[#F7F1DD]/95">
               {pseudocode.map((line) => (
                 <p key={line}>{line}</p>
               ))}

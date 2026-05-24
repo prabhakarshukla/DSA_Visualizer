@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F1E8C7;
+  --foreground: #4B5320;
+  --olive-primary-bg: #F1E8C7;
+  --olive-heading: #4B5320;
+  --olive-secondary: #9CA763;
+  --olive-accent: #7D8F3B;
+  --olive-card: #F7F1DD;
+  --olive-border: #D8CCA3;
+  --olive-hover: #AAB76A;
 }
 
 @theme inline {
