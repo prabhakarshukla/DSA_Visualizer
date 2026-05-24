@@ -17,10 +17,10 @@ type VisualizerTileProps = {
 };
 
 const badgeStyles: Record<ModuleStatus, string> = {
-  Active: "border-[#AAB76A] bg-[#F7F1DD] text-[#7D8F3B]",
-  Ready: "border-[#AAB76A] bg-[#F7F1DD] text-[#7D8F3B]",
-  Next: "border-[#D8CCA3] bg-[#F7F1DD] text-[#9CA763]",
-  Planned: "border-[#D8CCA3] bg-[#F1E8C7] text-[#9CA763]",
+  Active: "border-[#AAB76A] bg-[#F7F1DD] text-[#556B2F]",
+  Ready: "border-[#AAB76A] bg-[#F7F1DD] text-[#556B2F]",
+  Next: "border-[#D8CCA3] bg-[#F7F1DD] text-[#556B2F]",
+  Planned: "border-[#D8CCA3] bg-[#F1E8C7] text-[#556B2F]",
 };
 
 export function VisualizerCard({ title, subtitle, href, status, icon, featured = false }: VisualizerTileProps) {
@@ -40,9 +40,9 @@ export function VisualizerCard({ title, subtitle, href, status, icon, featured =
         </div>
 
         <p className="text-base font-semibold text-[#4B5320]">{title}</p>
-        <p className="mt-1 flex-1 text-sm text-[#9CA763]">{subtitle}</p>
+        <p className="mt-1 flex-1 text-sm text-[#556B2F]">{subtitle}</p>
 
-        <p className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#7D8F3B] group-hover:text-[#4B5320]">
+        <p className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[#556B2F] group-hover:text-[#4B5320]">
           Enter module
           <ArrowRight className="h-4 w-4" />
         </p>

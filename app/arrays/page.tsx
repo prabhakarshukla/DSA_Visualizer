@@ -417,13 +417,13 @@ export default function ArraysPage() {
   return (
     <main className="min-h-screen bg-[#F1E8C7] px-4 py-10 text-[#4B5320] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
-        <Link href="/" className="inline-flex items-center text-sm font-medium text-[#7D8F3B] hover:text-[#4B5320]">
+        <Link href="/" className="inline-flex items-center text-sm font-medium text-[#556B2F] hover:text-[#4B5320]">
           &larr; Back to homepage
         </Link>
 
         <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)] sm:p-8">
           <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Arrays Visualizer</h1>
-          <p className="mt-3 max-w-3xl text-[#9CA763]">
+          <p className="mt-3 max-w-3xl text-[#556B2F]">
             Perform array operations interactively and watch how values shift across indexes in real time.
           </p>
 
@@ -467,7 +467,7 @@ export default function ArraysPage() {
               <Search className="h-4 w-4" />
               Search Value
             </button>
-            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#7D8F3B] hover:bg-[#F1E8C7]">
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#556B2F] hover:bg-[#F1E8C7]">
               <RotateCcw className="h-4 w-4" />
               Reset
             </button>
@@ -477,14 +477,14 @@ export default function ArraysPage() {
         <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)] sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-[#4B5320]">Array Visual Area</h2>
-            <div className="rounded-full border border-[#AAB76A] bg-[#F1E8C7] px-3 py-1 text-xs font-medium text-[#7D8F3B]">
+            <div className="rounded-full border border-[#AAB76A] bg-[#F1E8C7] px-3 py-1 text-xs font-medium text-[#556B2F]">
               Current length: {array.length}
             </div>
           </div>
 
           <div className="mt-4 min-h-28 rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
             {array.length === 0 ? (
-              <p className="text-sm text-[#9CA763]">Array is empty.</p>
+              <p className="text-sm text-[#556B2F]">Array is empty.</p>
             ) : (
               <motion.div layout className="flex flex-wrap items-end gap-3">
                 <AnimatePresence>
@@ -507,7 +507,7 @@ export default function ArraysPage() {
                         className="rounded-xl border px-4 py-3 text-center shadow-sm"
                       >
                         <p className="text-sm font-semibold text-[#4B5320]">{value}</p>
-                        <p className="mt-1 text-xs text-[#9CA763]">index {index}</p>
+                        <p className="mt-1 text-xs text-[#556B2F]">index {index}</p>
                       </motion.div>
                     );
                   })}
@@ -517,8 +517,8 @@ export default function ArraysPage() {
           </div>
 
           <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F1E8C7] p-4">
-            <p className="text-sm font-semibold text-[#7D8F3B]">Key Concept</p>
-            <p className="mt-1 text-sm text-[#9CA763]">
+            <p className="text-sm font-semibold text-[#556B2F]">Key Concept</p>
+            <p className="mt-1 text-sm text-[#556B2F]">
               Arrays contiguous memory locations me store hote hain, aur indexing 0 se start hoti hai. Isliye insert/delete
               middle ya beginning me karte time shifting ka cost aata hai.
             </p>
@@ -531,17 +531,17 @@ export default function ArraysPage() {
 
             <div className="mt-4 space-y-3 text-sm">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Operation</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Operation</p>
                 <p className="mt-1 font-medium text-[#4B5320]">{explanation.operation}</p>
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Concept</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Concept</p>
                 <p className="mt-1 leading-6 text-[#4B5320]">{explanation.concept}</p>
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Step-by-step process</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Step-by-step process</p>
                 <ul className="mt-1 list-disc space-y-1 pl-5 text-[#4B5320]">
                   {explanation.steps.map((step) => (
                     <li key={step}>{step}</li>
@@ -550,19 +550,19 @@ export default function ArraysPage() {
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Final array</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Final array</p>
                 <p className="mt-1 font-mono text-[#4B5320]">{explanation.finalArray}</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Time complexity</p>
-                <span className="rounded-full border border-[#AAB76A] bg-[#F1E8C7] px-2.5 py-1 text-xs font-semibold text-[#7D8F3B]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Time complexity</p>
+                <span className="rounded-full border border-[#AAB76A] bg-[#F1E8C7] px-2.5 py-1 text-xs font-semibold text-[#556B2F]">
                   {explanation.timeComplexity}
                 </span>
               </div>
 
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Exam note</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Exam note</p>
                 <p className="mt-1 leading-6 text-[#4B5320]">{explanation.examNote}</p>
               </div>
             </div>

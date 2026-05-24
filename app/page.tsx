@@ -104,20 +104,20 @@ export default function Home() {
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-[#4B5320] sm:text-3xl">Algorithm Path</h2>
-                <p className="mt-1 text-sm text-[#9CA763] sm:text-base">
+                <p className="mt-1 text-sm text-[#556B2F] sm:text-base">
                   Move through connected learning steps from arrays to advanced patterns.
                 </p>
-                <p className="mt-2 inline-flex items-center rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1 text-xs font-semibold text-[#7D8F3B]">
+                <p className="mt-2 inline-flex items-center rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1 text-xs font-semibold text-[#556B2F]">
                   4 Visualizers Complete · Fully Interactive
                 </p>
               </div>
-              <BarChart3 className="hidden h-5 w-5 text-[#7D8F3B] sm:block" />
+              <BarChart3 className="hidden h-5 w-5 text-[#556B2F] sm:block" />
             </div>
 
             <div className="mb-4 hidden items-center gap-2 px-2 md:flex">
               {modules.slice(0, -1).map((module) => (
                 <div key={`${module.title}-connector`} className="group flex flex-1 items-center">
-                  <span className="mr-2 text-xs font-medium text-[#9CA763]">{module.title}</span>
+                  <span className="mr-2 text-xs font-medium text-[#556B2F]">{module.title}</span>
                   <span className="h-px flex-1 bg-gradient-to-r from-[#AAB76A] via-[#7D8F3B] to-transparent transition group-hover:from-[#7D8F3B] group-hover:via-[#4B5320]" />
                 </div>
               ))}

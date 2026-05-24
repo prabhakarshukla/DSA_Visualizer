@@ -285,13 +285,13 @@ export default function LinearQueuePage() {
     <main className="min-h-screen bg-[#F1E8C7] px-4 py-10 text-[#4B5320] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-          <Link href="/queue" className="text-[#7D8F3B] hover:text-[#4B5320]">&larr; Back to Queue overview</Link>
-          <Link href="/" className="text-[#7D8F3B] hover:text-[#4B5320]">Back to homepage</Link>
+          <Link href="/queue" className="text-[#556B2F] hover:text-[#4B5320]">&larr; Back to Queue overview</Link>
+          <Link href="/" className="text-[#556B2F] hover:text-[#4B5320]">Back to homepage</Link>
         </div>
 
         <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
           <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Linear Queue Visualizer</h1>
-          <p className="mt-3 max-w-3xl text-[#9CA763]">
+          <p className="mt-3 max-w-3xl text-[#556B2F]">
             Explore FIFO queue behavior where enqueue happens at REAR and dequeue happens at FRONT.
           </p>
 
@@ -313,15 +313,15 @@ export default function LinearQueuePage() {
                   placeholder="Max capacity"
                   className="w-full rounded-xl border border-[#D8CCA3] bg-[#F1E8C7] px-4 py-2.5 text-sm outline-none ring-[#AAB76A] transition focus:ring"
                 />
-                <button onClick={handleCapacityUpdate} className="rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2.5 text-xs font-semibold text-[#7D8F3B] hover:bg-[#F1E8C7]">Set Max</button>
+                <button onClick={handleCapacityUpdate} className="rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2.5 text-xs font-semibold text-[#556B2F] hover:bg-[#F1E8C7]">Set Max</button>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs font-medium md:grid-cols-6">
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#7D8F3B]">FRONT: {frontIndex}</span>
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#7D8F3B]">REAR: {rearIndex}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#556B2F]">FRONT: {frontIndex}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#556B2F]">REAR: {rearIndex}</span>
               <span className="rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-2 text-indigo-700">Size: {currentSize}</span>
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#7D8F3B]">Max: {maxCapacity}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#556B2F]">Max: {maxCapacity}</span>
               <span className="rounded-lg border border-[#D8CCA3] bg-[#F1E8C7] px-2 py-2 text-[#4B5320]">Empty: {isEmpty ? "true" : "false"}</span>
               <span className="rounded-lg border border-amber-200 bg-amber-50 px-2 py-2 text-amber-700">Full: {isFull ? "true" : "false"}</span>
             </div>
@@ -333,7 +333,7 @@ export default function LinearQueuePage() {
             <button onClick={handlePeekFront} className="inline-flex items-center justify-center gap-1 rounded-xl bg-[#7D8F3B] px-3 py-2 text-sm font-medium text-white hover:bg-[#F7F1DD]0"><Eye className="h-4 w-4" />Peek Front</button>
             <button onClick={handleIsEmpty} className="rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F1E8C7]">isEmpty</button>
             <button onClick={handleIsFull} className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-100">isFull</button>
-            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#7D8F3B] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset</button>
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#556B2F] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset</button>
           </div>
         </section>
 
@@ -367,11 +367,11 @@ export default function LinearQueuePage() {
                 )}
               </AnimatePresence>
 
-              <div className="mb-2 flex justify-between text-xs font-semibold text-[#7D8F3B]">
-                <span className={highlightFront ? "text-[#7D8F3B]" : ""}>FRONT</span>
-                <span className={highlightRear ? "text-[#7D8F3B]" : ""}>REAR</span>
+              <div className="mb-2 flex justify-between text-xs font-semibold text-[#556B2F]">
+                <span className={highlightFront ? "text-[#556B2F]" : ""}>FRONT</span>
+                <span className={highlightRear ? "text-[#556B2F]" : ""}>REAR</span>
               </div>
-              <div className="mb-2 flex justify-between text-[#7D8F3B]">
+              <div className="mb-2 flex justify-between text-[#556B2F]">
                 <ArrowDown className="h-4 w-4" />
                 <ArrowDown className="h-4 w-4" />
               </div>
@@ -410,8 +410,8 @@ export default function LinearQueuePage() {
             </div>
 
             <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
-              <p className="text-sm font-semibold text-[#7D8F3B]">Key Concept</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
+              <p className="text-sm font-semibold text-[#556B2F]">Key Concept</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#556B2F]">
                 <li>Queue follows FIFO.</li>
                 <li>Enqueue at REAR.</li>
                 <li>Dequeue from FRONT.</li>
@@ -427,15 +427,15 @@ export default function LinearQueuePage() {
 
               <div className="mt-4 space-y-3 text-sm">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Operation</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Operation</p>
                   <p className="mt-1 font-medium text-[#4B5320]">{explanation.operation}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Concept</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Concept</p>
                   <p className="mt-1 leading-6 text-[#4B5320]">{explanation.concept}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Step-by-step process</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Step-by-step process</p>
                   <ul className="mt-1 list-disc space-y-1 pl-5 text-[#4B5320]">
                     {explanation.steps.map((step) => (
                       <li key={step}>{step}</li>
@@ -443,15 +443,15 @@ export default function LinearQueuePage() {
                   </ul>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Final queue</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Final queue</p>
                   <p className="mt-1 font-mono text-[#4B5320]">{explanation.finalQueue}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Time complexity</p>
-                  <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2.5 py-1 text-xs font-semibold text-[#7D8F3B]">{explanation.timeComplexity}</span>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Time complexity</p>
+                  <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2.5 py-1 text-xs font-semibold text-[#556B2F]">{explanation.timeComplexity}</span>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Exam note</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Exam note</p>
                   <p className="mt-1 leading-6 text-[#4B5320]">{explanation.examNote}</p>
                 </div>
               </div>

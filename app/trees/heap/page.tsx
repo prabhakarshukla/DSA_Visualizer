@@ -360,10 +360,10 @@ export default function HeapPage() {
     <main className="min-h-screen bg-[#F1E8C7] px-4 py-8 text-[#4B5320] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-[#4B5320]">
-          <Link href="/trees" className="text-[#7D8F3B] hover:text-[#4B5320]">
+          <Link href="/trees" className="text-[#556B2F] hover:text-[#4B5320]">
             &larr; Back to Trees overview
           </Link>
-          <Link href="/" className="text-[#7D8F3B] hover:text-[#4B5320]">
+          <Link href="/" className="text-[#556B2F] hover:text-[#4B5320]">
             Back to homepage
           </Link>
         </div>
@@ -374,7 +374,7 @@ export default function HeapPage() {
               <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">
                 Heap Tree Visualizer
               </h1>
-              <p className="mt-2 text-[#9CA763]">
+              <p className="mt-2 text-[#556B2F]">
                 Min Heap and Max Heap Interactive Visualization
               </p>
             </div>
@@ -389,7 +389,7 @@ export default function HeapPage() {
             <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-[#4B5320] sm:text-xl">Tree Visualization</h2>
-                <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1 text-xs font-semibold text-[#7D8F3B]">
+                <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1 text-xs font-semibold text-[#556B2F]">
                   {modeLabel}
                 </span>
               </div>
@@ -505,10 +505,10 @@ export default function HeapPage() {
                 Array Representation
               </h2>
               <div className="mt-4 space-y-3">
-                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                   Index
                 </div>
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(46px,1fr))] gap-2 text-center text-xs font-semibold text-[#9CA763] sm:text-sm">
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(46px,1fr))] gap-2 text-center text-xs font-semibold text-[#556B2F] sm:text-sm">
                   {heapData.map((_, index) => (
                     <div
                       key={`index-${index}`}
@@ -518,7 +518,7 @@ export default function HeapPage() {
                     </div>
                   ))}
                 </div>
-                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                   Values
                 </div>
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(46px,1fr))] gap-2 text-center text-xs font-semibold text-[#4B5320] sm:text-sm">
@@ -617,7 +617,7 @@ export default function HeapPage() {
             <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold text-[#4B5320] sm:text-xl">Controls Panel</h2>
-                <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1 text-xs font-semibold text-[#7D8F3B]">
+                <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1 text-xs font-semibold text-[#556B2F]">
                   Active: {modeLabel}
                 </span>
               </div>
@@ -636,7 +636,7 @@ export default function HeapPage() {
                     />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                       Heap Mode
                     </p>
                     <div className="mt-2 inline-flex rounded-full border border-[#D8CCA3] bg-[#F1E8C7] p-1">
@@ -646,7 +646,7 @@ export default function HeapPage() {
                         className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                           heapMode === "min"
                             ? "bg-[#7D8F3B] text-white shadow"
-                            : "text-[#9CA763] hover:text-[#4B5320]"
+                            : "text-[#556B2F] hover:text-[#4B5320]"
                         }`}
                       >
                         Min Heap
@@ -657,7 +657,7 @@ export default function HeapPage() {
                         className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                           heapMode === "max"
                             ? "bg-[#F7F1DD]0 text-white shadow"
-                            : "text-[#9CA763] hover:text-[#4B5320]"
+                            : "text-[#556B2F] hover:text-[#4B5320]"
                         }`}
                       >
                         Max Heap
@@ -673,7 +673,7 @@ export default function HeapPage() {
                     className={`rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition ${
                       isAnimating
                         ? "cursor-not-allowed border-[#D8CCA3] bg-[#F1E8C7] text-[#D8CCA3]"
-                        : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320] hover:border-[#AAB76A] hover:text-[#7D8F3B]"
+                        : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320] hover:border-[#AAB76A] hover:text-[#556B2F]"
                     }`}
                   >
                     Insert Node
@@ -685,7 +685,7 @@ export default function HeapPage() {
                     className={`rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition ${
                       isAnimating
                         ? "cursor-not-allowed border-[#D8CCA3] bg-[#F1E8C7] text-[#D8CCA3]"
-                        : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320] hover:border-[#AAB76A] hover:text-[#7D8F3B]"
+                        : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320] hover:border-[#AAB76A] hover:text-[#556B2F]"
                     }`}
                   >
                     Delete Root
@@ -697,7 +697,7 @@ export default function HeapPage() {
                     className={`rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition ${
                       isAnimating
                         ? "cursor-not-allowed border-[#D8CCA3] bg-[#F1E8C7] text-[#D8CCA3]"
-                        : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320] hover:border-[#AAB76A] hover:text-[#7D8F3B]"
+                        : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320] hover:border-[#AAB76A] hover:text-[#556B2F]"
                     }`}
                   >
                     Extract {heapMode === "min" ? "Min" : "Max"}
@@ -710,7 +710,7 @@ export default function HeapPage() {
                       className={`rounded-2xl border px-3 py-2 text-sm font-semibold shadow-sm transition ${
                         isAnimating
                           ? "cursor-not-allowed border-[#D8CCA3] bg-[#F1E8C7] text-[#D8CCA3]"
-                          : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320] hover:border-[#AAB76A] hover:text-[#7D8F3B]"
+                          : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320] hover:border-[#AAB76A] hover:text-[#556B2F]"
                       }`}
                     >
                       {label}
@@ -729,7 +729,7 @@ export default function HeapPage() {
                 </h2>
                 <div className="mt-4 space-y-4 text-sm text-[#4B5320]">
                   <div className="rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                       Operation
                     </p>
                     <p className="mt-1 text-base font-semibold text-[#4B5320]">
@@ -737,13 +737,13 @@ export default function HeapPage() {
                     </p>
                   </div>
                   <div className="rounded-2xl border border-[#D8CCA3] bg-[#F7F1DD] px-4 py-3 text-[#4B5320]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7D8F3B]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                       Concept
                     </p>
                     <p className="mt-2 text-sm leading-relaxed">{explanation.concept}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                       Step-by-step process
                     </p>
                     <ul className="mt-2 space-y-2">
@@ -758,14 +758,14 @@ export default function HeapPage() {
                     </ul>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                       Heap property changes
                     </p>
                     <ul className="mt-2 space-y-2">
                       {propertyChanges.map((change, idx) => (
                         <li
                           key={`change-${idx}`}
-                          className="rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-[#7D8F3B]"
+                          className="rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-[#556B2F]"
                         >
                           {change}
                         </li>
@@ -773,17 +773,17 @@ export default function HeapPage() {
                     </ul>
                   </div>
                   <div className="rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                       Final Heap
                     </p>
                     <p className="mt-1 font-mono text-sm text-[#4B5320]">{finalHeap}</p>
                   </div>
-                  <div className="rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] px-4 py-3 text-[#7D8F3B]">
+                  <div className="rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] px-4 py-3 text-[#556B2F]">
                     Time complexity:{" "}
                     <span className="font-semibold">{explanation.timeComplexity}</span>
                   </div>
-                  <div className="rounded-2xl border border-[#D8CCA3] bg-[#F7F1DD] px-4 py-3 text-[#9CA763]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+                  <div className="rounded-2xl border border-[#D8CCA3] bg-[#F7F1DD] px-4 py-3 text-[#556B2F]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                       Exam note
                     </p>
                     <p className="mt-2 text-sm leading-relaxed">{explanation.examNote}</p>
@@ -815,7 +815,7 @@ export default function HeapPage() {
                       key={item.label}
                       className="flex items-center justify-between rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] px-4 py-3"
                     >
-                      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+                      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
                         {item.label}
                       </span>
                       <span className="text-base font-semibold text-[#4B5320]">{item.value}</span>
@@ -850,7 +850,7 @@ export default function HeapPage() {
                   ].map((item) => (
                     <li
                       key={item}
-                      className="rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] px-4 py-3 text-[#7D8F3B]"
+                      className="rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] px-4 py-3 text-[#556B2F]"
                     >
                       {item}
                     </li>
@@ -885,12 +885,12 @@ export default function HeapPage() {
         <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-[#4B5320] sm:text-xl">BST vs Heap</h2>
-            <span className="rounded-full border border-[#D8CCA3] bg-[#F1E8C7] px-3 py-1 text-xs font-semibold text-[#9CA763]">
+            <span className="rounded-full border border-[#D8CCA3] bg-[#F1E8C7] px-3 py-1 text-xs font-semibold text-[#556B2F]">
               Comparison
             </span>
           </div>
           <div className="mt-4 overflow-hidden rounded-2xl border border-[#D8CCA3]">
-            <div className="grid grid-cols-3 bg-[#F1E8C7] text-left text-xs font-semibold uppercase tracking-[0.2em] text-[#9CA763]">
+            <div className="grid grid-cols-3 bg-[#F1E8C7] text-left text-xs font-semibold uppercase tracking-[0.2em] text-[#556B2F]">
               <div className="px-3 py-2">Aspect</div>
               <div className="px-3 py-2">BST</div>
               <div className="px-3 py-2">Heap</div>
@@ -924,8 +924,8 @@ export default function HeapPage() {
                 }`}
               >
                 <div className="px-3 py-2 font-semibold text-[#4B5320]">{row.aspect}</div>
-                <div className="px-3 py-2 text-[#9CA763]">{row.bst}</div>
-                <div className="px-3 py-2 text-[#9CA763]">{row.heap}</div>
+                <div className="px-3 py-2 text-[#556B2F]">{row.bst}</div>
+                <div className="px-3 py-2 text-[#556B2F]">{row.heap}</div>
               </div>
             ))}
           </div>

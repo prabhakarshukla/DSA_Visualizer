@@ -292,17 +292,17 @@ export default function PriorityQueuePage() {
     <main className="min-h-screen bg-[#F1E8C7] px-4 py-10 text-[#4B5320] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-          <Link href="/queue" className="text-[#7D8F3B] hover:text-[#4B5320]">
+          <Link href="/queue" className="text-[#556B2F] hover:text-[#4B5320]">
             &larr; Back to Queue overview
           </Link>
-          <Link href="/" className="text-[#7D8F3B] hover:text-[#4B5320]">
+          <Link href="/" className="text-[#556B2F] hover:text-[#4B5320]">
             Back to homepage
           </Link>
         </div>
 
         <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
           <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Priority Queue Visualizer</h1>
-          <p className="mt-3 max-w-3xl text-[#9CA763]">
+          <p className="mt-3 max-w-3xl text-[#556B2F]">
             Priority Queue me smaller number ka matlab higher priority hota hai, isliye dequeue order FIFO se different ho sakta hai.
           </p>
 
@@ -332,7 +332,7 @@ export default function PriorityQueuePage() {
                 />
                 <button
                   onClick={handleCapacityUpdate}
-                  className="rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2.5 text-xs font-semibold text-[#7D8F3B] hover:bg-[#F1E8C7]"
+                  className="rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2.5 text-xs font-semibold text-[#556B2F] hover:bg-[#F1E8C7]"
                 >
                   Set Max
                 </button>
@@ -341,10 +341,10 @@ export default function PriorityQueuePage() {
 
             <div className="grid grid-cols-2 gap-2 text-xs font-medium md:grid-cols-5">
               <span className="rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-2 text-indigo-700">Size: {queue.length}</span>
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#7D8F3B]">Max: {maxCapacity}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#556B2F]">Max: {maxCapacity}</span>
               <span className="rounded-lg border border-[#D8CCA3] bg-[#F1E8C7] px-2 py-2 text-[#4B5320]">Empty: {isEmpty ? "true" : "false"}</span>
               <span className="rounded-lg border border-amber-200 bg-amber-50 px-2 py-2 text-amber-700">Full: {isFull ? "true" : "false"}</span>
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#7D8F3B]">
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-2 text-[#556B2F]">
                 Highest: {highest ? `${highest.value} (P:${highest.priority})` : "N/A"}
               </span>
             </div>
@@ -375,7 +375,7 @@ export default function PriorityQueuePage() {
             </button>
             <button
               onClick={handleReset}
-              className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#7D8F3B] hover:bg-[#F1E8C7]"
+              className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#556B2F] hover:bg-[#F1E8C7]"
             >
               <RotateCcw className="h-4 w-4" />
               Reset
@@ -386,7 +386,7 @@ export default function PriorityQueuePage() {
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-[360px_1fr]">
           <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
             <h2 className="text-lg font-semibold text-[#4B5320]">Priority Queue Visual</h2>
-            <p className="mt-1 text-xs font-medium text-[#7D8F3B]">FRONT par highest priority element</p>
+            <p className="mt-1 text-xs font-medium text-[#556B2F]">FRONT par highest priority element</p>
 
             <div className="mt-4 rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
               <AnimatePresence>
@@ -414,7 +414,7 @@ export default function PriorityQueuePage() {
                 )}
               </AnimatePresence>
 
-              <p className="mb-2 text-xs font-semibold text-[#7D8F3B]">FRONT</p>
+              <p className="mb-2 text-xs font-semibold text-[#556B2F]">FRONT</p>
               <div className={`space-y-2 rounded-xl border-2 bg-[#F7F1DD] p-3 ${isFull ? "border-amber-400" : "border-[#D8CCA3]"}`}>
                 <AnimatePresence>
                   {queue.map((item, idx) => (
@@ -436,15 +436,15 @@ export default function PriorityQueuePage() {
                   ))}
                 </AnimatePresence>
                 {queue.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-[#D8CCA3] px-3 py-4 text-center text-sm text-[#9CA763]">Queue is empty</div>
+                  <div className="rounded-lg border border-dashed border-[#D8CCA3] px-3 py-4 text-center text-sm text-[#556B2F]">Queue is empty</div>
                 )}
               </div>
-              <p className="mt-2 text-right text-xs font-semibold text-[#7D8F3B]">REAR</p>
+              <p className="mt-2 text-right text-xs font-semibold text-[#556B2F]">REAR</p>
             </div>
 
             <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
-              <p className="text-sm font-semibold text-[#7D8F3B]">Key Concept</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
+              <p className="text-sm font-semibold text-[#556B2F]">Key Concept</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#556B2F]">
                 <li>Priority Queue elements ko priority ke basis par process karti hai.</li>
                 <li>Smaller priority number = higher priority.</li>
                 <li>Same priority par FIFO apply hota hai.</li>
@@ -454,7 +454,7 @@ export default function PriorityQueuePage() {
 
             <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
               <p className="text-sm font-semibold text-[#4B5320]">Normal Queue vs Priority Queue</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#556B2F]">
                 <li>Normal Queue FIFO strictly follow karti hai.</li>
                 <li>Priority Queue priority-based ordering karti hai.</li>
                 <li>Use cases: scheduling, emergency handling, critical task execution.</li>
@@ -462,8 +462,8 @@ export default function PriorityQueuePage() {
             </div>
 
             <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
-              <p className="text-sm font-semibold text-[#7D8F3B]">Real-world Use Cases</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
+              <p className="text-sm font-semibold text-[#556B2F]">Real-world Use Cases</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#556B2F]">
                 <li>CPU Scheduling</li>
                 <li>Emergency systems</li>
                 <li>Network routing</li>
@@ -477,15 +477,15 @@ export default function PriorityQueuePage() {
               <h3 className="text-lg font-semibold text-[#4B5320]">Step Explanation</h3>
               <div className="mt-4 space-y-3 text-sm">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Operation</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Operation</p>
                   <p className="mt-1 font-medium text-[#4B5320]">{explanation.operation}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Concept</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Concept</p>
                   <p className="mt-1 leading-6 text-[#4B5320]">{explanation.concept}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Step-by-step process</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Step-by-step process</p>
                   <ul className="mt-1 list-disc space-y-1 pl-5 text-[#4B5320]">
                     {explanation.steps.map((step) => (
                       <li key={step}>{step}</li>
@@ -493,17 +493,17 @@ export default function PriorityQueuePage() {
                   </ul>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Final priority queue</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Final priority queue</p>
                   <p className="mt-1 font-mono text-[#4B5320]">{explanation.finalQueue}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Time complexity</p>
-                  <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2.5 py-1 text-xs font-semibold text-[#7D8F3B]">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Time complexity</p>
+                  <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2.5 py-1 text-xs font-semibold text-[#556B2F]">
                     {explanation.timeComplexity}
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Exam note</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Exam note</p>
                   <p className="mt-1 leading-6 text-[#4B5320]">{explanation.examNote}</p>
                 </div>
               </div>

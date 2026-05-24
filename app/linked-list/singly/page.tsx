@@ -414,13 +414,13 @@ export default function LinkedListPage() {
   return (
     <main className="min-h-screen bg-[#F1E8C7] px-4 py-10 text-[#4B5320] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
-        <Link href="/" className="inline-flex items-center text-sm font-medium text-[#7D8F3B] hover:text-[#4B5320]">
+        <Link href="/" className="inline-flex items-center text-sm font-medium text-[#556B2F] hover:text-[#4B5320]">
           &larr; Back to homepage
         </Link>
 
         <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
           <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Singly Linked List Visualizer</h1>
-          <p className="mt-3 max-w-3xl text-[#9CA763]">
+          <p className="mt-3 max-w-3xl text-[#556B2F]">
             Understand HEAD updates, next pointer changes, and node address linking step by step.
           </p>
 
@@ -449,7 +449,7 @@ export default function LinkedListPage() {
             <button onClick={handleDeleteEnd} className="rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F1E8C7]">Delete at End</button>
             <button onClick={handleDeletePosition} className="rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F1E8C7]">Delete at Position</button>
             <button onClick={handleSearch} className="inline-flex items-center justify-center gap-1 rounded-xl bg-[#F7F1DD]0 px-3 py-2 text-sm font-medium text-white hover:bg-[#9CA763]"><Search className="h-4 w-4" />Search Value</button>
-            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#7D8F3B] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset</button>
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#556B2F] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset</button>
           </div>
         </section>
 
@@ -458,16 +458,16 @@ export default function LinkedListPage() {
 
           <div className="mt-4 overflow-x-auto rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
             {linkedList.length === 0 ? (
-              <div className="flex items-center gap-2 text-sm text-[#9CA763]">
-                <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2 py-0.5 text-[#7D8F3B]">HEAD stores NULL</span>
+              <div className="flex items-center gap-2 text-sm text-[#556B2F]">
+                <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2 py-0.5 text-[#556B2F]">HEAD stores NULL</span>
                 <ArrowRight className="h-4 w-4 text-[#D8CCA3]" />
                 <span>NULL</span>
               </div>
             ) : (
               <div className="min-w-max">
-                <div className="mb-2 flex items-center gap-2 text-xs font-medium text-[#7D8F3B]">
+                <div className="mb-2 flex items-center gap-2 text-xs font-medium text-[#556B2F]">
                   <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2 py-0.5">HEAD stores {headAddress}</span>
-                  <ArrowRight className="h-4 w-4 text-[#7D8F3B]" />
+                  <ArrowRight className="h-4 w-4 text-[#556B2F]" />
                 </div>
 
                 <motion.div layout className="flex items-center gap-2">
@@ -493,15 +493,15 @@ export default function LinkedListPage() {
                           >
                             <div className="flex border-b border-[#D8CCA3]">
                               <div className="border-r border-[#D8CCA3] px-4 py-2 text-center">
-                                <p className="text-xs text-[#9CA763]">data</p>
+                                <p className="text-xs text-[#556B2F]">data</p>
                                 <p className="text-sm font-semibold text-[#4B5320]">{value}</p>
                               </div>
                               <div className="px-4 py-2 text-center">
-                                <p className="text-xs text-[#9CA763]">next</p>
+                                <p className="text-xs text-[#556B2F]">next</p>
                                 <p className="text-sm font-semibold text-[#4B5320]">{index === linkedList.length - 1 ? "NULL" : addressOf(index + 1)}</p>
                               </div>
                             </div>
-                            <div className="py-1 text-center text-xs text-[#9CA763]">
+                            <div className="py-1 text-center text-xs text-[#556B2F]">
                               <p>addr: {addressOf(index)}</p>
                               <p>pos: {index}</p>
                             </div>
@@ -513,15 +513,15 @@ export default function LinkedListPage() {
                     })}
                   </AnimatePresence>
 
-                  <span className="rounded-full border border-[#D8CCA3] bg-[#F7F1DD] px-2 py-0.5 text-xs font-medium text-[#9CA763]">NULL</span>
+                  <span className="rounded-full border border-[#D8CCA3] bg-[#F7F1DD] px-2 py-0.5 text-xs font-medium text-[#556B2F]">NULL</span>
                 </motion.div>
               </div>
             )}
           </div>
 
           <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
-            <p className="text-sm font-semibold text-[#7D8F3B]">Key Concept</p>
-            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
+            <p className="text-sm font-semibold text-[#556B2F]">Key Concept</p>
+            <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#556B2F]">
               <li>Each node has data and next pointer.</li>
               <li>Next pointer stores the address of the next node.</li>
               <li>The last node stores NULL in next field.</li>
@@ -538,15 +538,15 @@ export default function LinkedListPage() {
 
             <div className="mt-4 space-y-3 text-sm">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Operation</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Operation</p>
                 <p className="mt-1 font-medium text-[#4B5320]">{explanation.operation}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Concept</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Concept</p>
                 <p className="mt-1 leading-6 text-[#4B5320]">{explanation.concept}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Step-by-step process</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Step-by-step process</p>
                 <ul className="mt-1 list-disc space-y-1 pl-5 text-[#4B5320]">
                   {explanation.steps.map((step) => (
                     <li key={step}>{step}</li>
@@ -554,15 +554,15 @@ export default function LinkedListPage() {
                 </ul>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Final linked list</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Final linked list</p>
                 <p className="mt-1 font-mono text-[#4B5320]">{explanation.finalList}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Time complexity</p>
-                <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2.5 py-1 text-xs font-semibold text-[#7D8F3B]">{explanation.timeComplexity}</span>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Time complexity</p>
+                <span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2.5 py-1 text-xs font-semibold text-[#556B2F]">{explanation.timeComplexity}</span>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Exam note</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Exam note</p>
                 <p className="mt-1 leading-6 text-[#4B5320]">{explanation.examNote}</p>
               </div>
             </div>

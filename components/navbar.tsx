@@ -19,11 +19,11 @@ export function Navbar() {
           </span>
           <div>
             <p className="text-sm font-semibold tracking-tight text-[#4B5320]">DSA Visualizer Lite</p>
-            <p className="text-xs text-[#9CA763]">Interactive DSA Playground</p>
+            <p className="text-xs text-[#556B2F]">Interactive DSA Playground</p>
           </div>
         </Link>
 
-        <div className="hidden items-center gap-2 rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#7D8F3B] sm:inline-flex">
+        <div className="hidden items-center gap-2 rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#556B2F] sm:inline-flex">
           <Waypoints className="h-3.5 w-3.5" />
           Visual thinking first
           <Sparkles className="h-3.5 w-3.5" />

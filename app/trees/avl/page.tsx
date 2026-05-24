@@ -617,7 +617,7 @@ export default function AvlPage() {
 
   const bfTone = (bf: number) => {
     const abs = Math.abs(bf);
-    if (abs === 0) return "border-[#7D8F3B] bg-[#F7F1DD] text-[#7D8F3B]";
+    if (abs === 0) return "border-[#7D8F3B] bg-[#F7F1DD] text-[#556B2F]";
     if (abs === 1) return "border-amber-300 bg-amber-50 text-amber-700";
     return "border-rose-300 bg-rose-50 text-rose-700";
   };
@@ -626,24 +626,24 @@ export default function AvlPage() {
     <main className="min-h-screen bg-[#F1E8C7] px-4 py-10 text-[#4B5320] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
         <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
-          <Link href="/trees" className="text-[#7D8F3B] hover:text-[#4B5320]">&larr; Back to Trees overview</Link>
-          <Link href="/" className="text-[#7D8F3B] hover:text-[#4B5320]">Back to homepage</Link>
+          <Link href="/trees" className="text-[#556B2F] hover:text-[#4B5320]">&larr; Back to Trees overview</Link>
+          <Link href="/" className="text-[#556B2F] hover:text-[#4B5320]">Back to homepage</Link>
         </div>
 
         <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)] sm:p-8">
           <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">AVL Tree Visualizer</h1>
-          <p className="mt-3 max-w-3xl text-[#9CA763]">AVL ek self-balancing BST hai jaha balance factor maintain karne ke liye automatic LL/RR/LR/RL rotations lagti hain.</p>
+          <p className="mt-3 max-w-3xl text-[#556B2F]">AVL ek self-balancing BST hai jaha balance factor maintain karne ke liye automatic LL/RR/LR/RL rotations lagti hain.</p>
 
           <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto]">
             <input type="number" value={valueInput} onChange={(e) => setValueInput(e.target.value)} placeholder="Enter node value" className="w-full rounded-xl border border-[#D8CCA3] bg-[#F1E8C7] px-4 py-2.5 text-sm outline-none ring-[#AAB76A] transition focus:ring" />
-            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2.5 text-sm font-medium text-[#7D8F3B] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset Tree</button>
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2.5 text-sm font-medium text-[#556B2F] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset Tree</button>
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
             <button onClick={() => void handleInsert()} className="rounded-xl bg-[#4B5320] px-3 py-2 text-sm font-medium text-white hover:bg-[#7D8F3B]">Insert Node</button>
             <button onClick={handleDelete} className="rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#4B5320] hover:bg-[#F1E8C7]">Delete Node</button>
             <button onClick={() => void handleSearch()} className="inline-flex items-center justify-center gap-1 rounded-xl bg-[#7D8F3B] px-3 py-2 text-sm font-medium text-white hover:bg-[#F7F1DD]0"><Search className="h-4 w-4" />Search Node</button>
-            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#7D8F3B] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset Tree</button>
+            <button onClick={handleReset} className="inline-flex items-center justify-center gap-1 rounded-xl border border-[#AAB76A] bg-[#F7F1DD] px-3 py-2 text-sm font-medium text-[#556B2F] hover:bg-[#F1E8C7]"><RotateCcw className="h-4 w-4" />Reset Tree</button>
           </div>
 
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -657,7 +657,7 @@ export default function AvlPage() {
             <p className="text-sm font-semibold text-[#4B5320]">Traversal Controls</p>
             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Traversal Speed ({traversalSpeed.toFixed(2)}x)</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Traversal Speed ({traversalSpeed.toFixed(2)}x)</label>
                 <input type="range" min="0.25" max="2" step="0.25" value={traversalSpeed} onChange={(e) => setTraversalSpeed(Number(e.target.value))} className="mt-2 w-full accent-cyan-600" />
                 <div className="mt-2 flex gap-2">
                   <button onClick={() => setTraversalSpeed(0.5)} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-2.5 py-1 text-xs font-medium text-[#4B5320]">Slow</button>
@@ -666,14 +666,14 @@ export default function AvlPage() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Playback</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Playback</label>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button onClick={pauseTraversal} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#4B5320]">Pause</button>
                   <button onClick={() => void resumeTraversal()} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#4B5320]">Resume</button>
-                  <button onClick={() => void restartTraversal()} className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#7D8F3B]">Restart Traversal</button>
+                  <button onClick={() => void restartTraversal()} className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-3 py-1.5 text-xs font-medium text-[#556B2F]">Restart Traversal</button>
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#9CA763]">
-                  <input id="avl-stepmode" type="checkbox" checked={isStepMode} onChange={(e) => setIsStepMode(e.target.checked)} className="h-4 w-4 rounded border-[#D8CCA3] text-[#7D8F3B]" />
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#556B2F]">
+                  <input id="avl-stepmode" type="checkbox" checked={isStepMode} onChange={(e) => setIsStepMode(e.target.checked)} className="h-4 w-4 rounded border-[#D8CCA3] text-[#556B2F]" />
                   <label htmlFor="avl-stepmode" className="font-medium">Step-by-Step mode</label>
                   <button onClick={nextStep} className="rounded-lg border border-[#D8CCA3] bg-[#F7F1DD] px-2.5 py-1 text-xs font-medium text-[#4B5320]">Next Step</button>
                 </div>
@@ -681,9 +681,9 @@ export default function AvlPage() {
             </div>
 
             <div className="mt-3 grid grid-cols-1 gap-2 text-xs font-medium sm:grid-cols-3">
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#7D8F3B]">Status: {traversalStatus === "idle" ? "Idle" : traversalStatus === "running" ? "Running" : traversalStatus === "paused" ? "Paused" : "Completed"}</span>
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#7D8F3B]">Step {Math.min(traversalStep, activeTraversalIds.length)} / {activeTraversalIds.length || 0}</span>
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#7D8F3B]">Visited: {visitedOrder.length === 0 ? "-" : visitedOrder.join(" -> ")}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#556B2F]">Status: {traversalStatus === "idle" ? "Idle" : traversalStatus === "running" ? "Running" : traversalStatus === "paused" ? "Paused" : "Completed"}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#556B2F]">Step {Math.min(traversalStep, activeTraversalIds.length)} / {activeTraversalIds.length || 0}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#556B2F]">Visited: {visitedOrder.length === 0 ? "-" : visitedOrder.join(" -> ")}</span>
             </div>
           </div>
         </section>
@@ -691,14 +691,14 @@ export default function AvlPage() {
         <section className="grid grid-cols-1 gap-4 lg:grid-cols-[1.35fr_1fr]">
           <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
             <h2 className="text-lg font-semibold text-[#4B5320]">AVL Visual</h2>
-            <p className="mt-1 text-xs font-medium text-[#7D8F3B]">Traversal output: {traversalOrder}</p>
-            <p className="mt-1 text-xs font-medium text-[#7D8F3B]">Current visited node: {highlightId ? nodeById(root, highlightId)?.value ?? "-" : "-"}</p>
+            <p className="mt-1 text-xs font-medium text-[#556B2F]">Traversal output: {traversalOrder}</p>
+            <p className="mt-1 text-xs font-medium text-[#556B2F]">Current visited node: {highlightId ? nodeById(root, highlightId)?.value ?? "-" : "-"}</p>
 
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-medium md:grid-cols-4">
               <span className="rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1.5 text-indigo-700">Tree Height: {treeInfo.height}</span>
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#7D8F3B]">Balanced: {treeInfo.balanced ? "true" : "false"}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#556B2F]">Balanced: {treeInfo.balanced ? "true" : "false"}</span>
               <span className="rounded-lg border border-[#D8CCA3] bg-[#F1E8C7] px-2 py-1.5 text-[#4B5320]">Node Count: {treeInfo.count}</span>
-              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#7D8F3B]">Last Rotation: {lastRotation}</span>
+              <span className="rounded-lg border border-[#AAB76A] bg-[#F7F1DD] px-2 py-1.5 text-[#556B2F]">Last Rotation: {lastRotation}</span>
             </div>
 
             <div className="mt-4 rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
@@ -711,7 +711,7 @@ export default function AvlPage() {
               </AnimatePresence>
 
               <div className="mb-3 rounded-xl border border-[#D8CCA3] bg-[#F7F1DD] px-3 py-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#7D8F3B]">Comparison / Decision Path</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Comparison / Decision Path</p>
                 <ul className="mt-1 space-y-1 text-sm text-[#4B5320]">
                   {comparisonLog.length === 0 ? <li>-</li> : comparisonLog.map((line) => <li key={line}>{line}</li>)}
                 </ul>
@@ -726,7 +726,7 @@ export default function AvlPage() {
 
                 {visual.nodes.map((node) => (
                   <motion.div key={node.id} layout initial={{ opacity: 0, scale: 0.86 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.82 }} transition={{ type: "spring", stiffness: 250, damping: 22 }} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${node.x}%`, top: `${node.y}%` }}>
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold shadow-sm ${highlightId === node.id ? "border-[#AAB76A] bg-[#F1E8C7] text-[#7D8F3B]" : unbalancedIds.includes(node.id) ? "border-rose-400 bg-rose-100 text-rose-800" : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320]"}`}>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold shadow-sm ${highlightId === node.id ? "border-[#AAB76A] bg-[#F1E8C7] text-[#556B2F]" : unbalancedIds.includes(node.id) ? "border-rose-400 bg-rose-100 text-rose-800" : "border-[#D8CCA3] bg-[#F7F1DD] text-[#4B5320]"}`}>
                       {node.value}
                     </div>
                     <div className={`mt-1 rounded-md border px-1.5 py-0.5 text-center text-[10px] font-semibold ${bfTone(node.bf)}`}>
@@ -735,13 +735,13 @@ export default function AvlPage() {
                   </motion.div>
                 ))}
 
-                {visual.nodes.length === 0 && <div className="flex h-full min-h-[260px] items-center justify-center text-sm text-[#9CA763]">AVL tree is empty</div>}
+                {visual.nodes.length === 0 && <div className="flex h-full min-h-[260px] items-center justify-center text-sm text-[#556B2F]">AVL tree is empty</div>}
               </div>
             </div>
 
             <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
-              <p className="text-sm font-semibold text-[#7D8F3B]">Key Concept</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
+              <p className="text-sm font-semibold text-[#556B2F]">Key Concept</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#556B2F]">
                 <li>AVL ek self-balancing BST hai.</li>
                 <li>Balance factor (left height - right height) se balance track hota hai.</li>
                 <li>LL, RR, LR, RL rotations balance restore karti hain.</li>
@@ -751,7 +751,7 @@ export default function AvlPage() {
 
             <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
               <p className="text-sm font-semibold text-[#4B5320]">BST vs AVL</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#556B2F]">
                 <li>BST skew ho sakta hai, AVL actively balance maintain karta hai.</li>
                 <li>AVL ka worst-case height low rehta hai.</li>
                 <li>Isliye AVL me search typically faster and predictable hoti hai.</li>
@@ -759,8 +759,8 @@ export default function AvlPage() {
             </div>
 
             <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
-              <p className="text-sm font-semibold text-[#7D8F3B]">Real-world Use Cases</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#7D8F3B]">
+              <p className="text-sm font-semibold text-[#556B2F]">Real-world Use Cases</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[#556B2F]">
                 <li>Databases</li>
                 <li>Memory indexing</li>
                 <li>Search systems</li>
@@ -773,13 +773,13 @@ export default function AvlPage() {
             <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(15,23,42,0.08)]">
               <h3 className="text-lg font-semibold text-[#4B5320]">Step Explanation</h3>
               <div className="mt-4 space-y-3 text-sm">
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Operation</p><p className="mt-1 font-medium text-[#4B5320]">{explanation.operation}</p></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Concept</p><p className="mt-1 leading-6 text-[#4B5320]">{explanation.concept}</p></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Step-by-step process</p><ul className="mt-1 list-disc space-y-1 pl-5 text-[#4B5320]">{explanation.steps.map((step) => (<li key={step}>{step}</li>))}</ul></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Rotation explanation</p><p className="mt-1 text-[#4B5320]">{explanation.rotationExplanation}</p></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Final AVL tree</p><p className="mt-1 font-mono text-[#4B5320]">{explanation.finalTree}</p></div>
-                <div className="flex flex-wrap items-center gap-2"><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Time complexity</p><span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2.5 py-1 text-xs font-semibold text-[#7D8F3B]">{explanation.timeComplexity}</span></div>
-                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#9CA763]">Exam note</p><p className="mt-1 leading-6 text-[#4B5320]">{explanation.examNote}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Operation</p><p className="mt-1 font-medium text-[#4B5320]">{explanation.operation}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Concept</p><p className="mt-1 leading-6 text-[#4B5320]">{explanation.concept}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Step-by-step process</p><ul className="mt-1 list-disc space-y-1 pl-5 text-[#4B5320]">{explanation.steps.map((step) => (<li key={step}>{step}</li>))}</ul></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Rotation explanation</p><p className="mt-1 text-[#4B5320]">{explanation.rotationExplanation}</p></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Final AVL tree</p><p className="mt-1 font-mono text-[#4B5320]">{explanation.finalTree}</p></div>
+                <div className="flex flex-wrap items-center gap-2"><p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Time complexity</p><span className="rounded-full border border-[#AAB76A] bg-[#F7F1DD] px-2.5 py-1 text-xs font-semibold text-[#556B2F]">{explanation.timeComplexity}</span></div>
+                <div><p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Exam note</p><p className="mt-1 leading-6 text-[#4B5320]">{explanation.examNote}</p></div>
               </div>
             </div>
 
