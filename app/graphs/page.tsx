@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { RotateCcw, Zap } from "lucide-react";
-import { useState } from "react";
+import { RotateCcw, Zap, Plus, Trash2, Settings } from "lucide-react";
+import { useState, useMemo } from "react";
 
 type GraphNode = {
   id: number;
@@ -28,49 +28,59 @@ type RecursionStack = {
   returned: number[];
 };
 
-const defaultNodes: GraphNode[] = [
-  { id: 1, x: 50, y: 15 },
-  { id: 2, x: 25, y: 45 },
-  { id: 3, x: 75, y: 45 },
-  { id: 4, x: 10, y: 75 },
-  { id: 5, x: 40, y: 75 },
-  { id: 6, x: 90, y: 75 },
-];
-
-const defaultEdges: Edge[] = [
-  { from: 1, to: 2 },
-  { from: 1, to: 3 },
-  { from: 2, to: 4 },
-  { from: 2, to: 5 },
-  { from: 3, to: 6 },
-];
-
-const adjacencyList: Record<number, number[]> = {
-  1: [2, 3],
-  2: [1, 4, 5],
-  3: [1, 6],
-  4: [2],
-  5: [2],
-  6: [3],
-};
+type SpeedLevel = "slow" | "medium" | "fast";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-type SpeedLevel = "slow" | "medium" | "fast";
+const generateNodePosition = (nodeCount: number, index: number) => {
+  const angle = (index / Math.max(nodeCount, 1)) * 2 * Math.PI;
+  const radius = 30 + nodeCount * 2;
+  const x = 50 + radius * Math.cos(angle);
+  const y = 50 + radius * Math.sin(angle);
+  return { x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) };
+};
 
 export default function GraphPage() {
+  const [nodes, setNodes] = useState<GraphNode[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+  const [nextNodeId, setNextNodeId] = useState(1);
+
   const [visitedNodes, setVisitedNodes] = useState<number[]>([]);
   const [traversalOrder, setTraversalOrder] = useState<number[]>([]);
   const [activeNode, setActiveNode] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeTraversal, setActiveTraversal] = useState<TraversalType>("idle");
   const [traversalSteps, setTraversalSteps] = useState<string[]>([
-    "Select a traversal method to begin exploring the graph.",
+    "Build your graph and select a traversal method.",
   ]);
   const [queueState, setQueueState] = useState<QueueState>({ queue: [], dequeued: [] });
   const [activeEdges, setActiveEdges] = useState<Array<{ from: number; to: number }>>([]);
   const [recursionStack, setRecursionStack] = useState<RecursionStack>({ stack: [], returned: [] });
   const [speed, setSpeed] = useState<SpeedLevel>("medium");
+
+  const [sourceNode, setSourceNode] = useState<number | null>(null);
+  const [destNode, setDestNode] = useState<number | null>(null);
+  const [draggingNode, setDraggingNode] = useState<number | null>(null);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const adjacencyList = useMemo(() => {
+    const list: Record<number, number[]> = {};
+    nodes.forEach((n) => {
+      list[n.id] = [];
+    });
+    edges.forEach((e) => {
+      if (!list[e.from].includes(e.to)) {
+        list[e.from].push(e.to);
+      }
+      if (!list[e.to].includes(e.from)) {
+        list[e.to].push(e.from);
+      }
+    });
+    Object.keys(list).forEach((key) => {
+      list[parseInt(key)].sort((a, b) => a - b);
+    });
+    return list;
+  }, [nodes, edges]);
 
   const getSpeedMultiplier = (speedLevel: SpeedLevel) => {
     switch (speedLevel) {
@@ -85,8 +95,91 @@ export default function GraphPage() {
 
   const speedSleep = (ms: number) => sleep(ms * getSpeedMultiplier(speed));
 
-  const handleBFS = async () => {
+  const handleAddNode = () => {
+    const newId = nextNodeId;
+    const position = generateNodePosition(nodes.length, nodes.length);
+    setNodes([...nodes, { id: newId, x: position.x, y: position.y }]);
+    setNextNodeId(newId + 1);
+  };
+
+  const handleDeleteNode = (id: number) => {
+    setNodes(nodes.filter((n) => n.id !== id));
+    setEdges(edges.filter((e) => e.from !== id && e.to !== id));
+    if (sourceNode === id) setSourceNode(null);
+    if (destNode === id) setDestNode(null);
+  };
+
+  const handleConnectNodes = () => {
+    if (sourceNode === null || destNode === null) return;
+    if (sourceNode === destNode) return;
+
+    const edgeExists = edges.some(
+      (e) => (e.from === sourceNode && e.to === destNode) || (e.from === destNode && e.to === sourceNode)
+    );
+
+    if (!edgeExists) {
+      setEdges([...edges, { from: sourceNode, to: destNode }]);
+    }
+
+    setSourceNode(null);
+    setDestNode(null);
+  };
+
+  const handleDeleteEdge = (from: number, to: number) => {
+    setEdges(edges.filter((e) => !((e.from === from && e.to === to) || (e.from === to && e.to === from))));
+  };
+
+  const handleClearGraph = () => {
+    setNodes([]);
+    setEdges([]);
+    setNextNodeId(1);
+    setSourceNode(null);
+    setDestNode(null);
+    handleReset();
+  };
+
+  const handleSvgMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
     if (isAnimating) return;
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    for (const node of nodes) {
+      const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+      if (distance < 5) {
+        setDraggingNode(node.id);
+        setDragStart({ x: x - node.x, y: y - node.y });
+        return;
+      }
+    }
+  };
+
+  const handleSvgMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (draggingNode === null) return;
+
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100 - dragStart.x;
+    const y = ((e.clientY - rect.top) / rect.height) * 100 - dragStart.y;
+
+    setNodes(
+      nodes.map((n) =>
+        n.id === draggingNode
+          ? { ...n, x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) }
+          : n
+      )
+    );
+  };
+
+  const handleSvgMouseUp = () => {
+    if (draggingNode !== null) {
+      setDraggingNode(null);
+    }
+  };
+
+  const handleBFS = async () => {
+    if (isAnimating || nodes.length === 0) return;
     setIsAnimating(true);
     setVisitedNodes([]);
     setTraversalOrder([]);
@@ -96,14 +189,14 @@ export default function GraphPage() {
     setActiveEdges([]);
 
     const visited = new Set<number>();
-    const queue: number[] = [1];
+    const queue: number[] = [nodes[0].id];
     const order: number[] = [];
     const steps: string[] = [];
 
-    visited.add(1);
-    setVisitedNodes([1]);
-    setQueueState({ queue: [1], dequeued: [] });
-    steps.push("Initialize BFS: Add node 1 to queue");
+    visited.add(nodes[0].id);
+    setVisitedNodes([nodes[0].id]);
+    setQueueState({ queue: [nodes[0].id], dequeued: [] });
+    steps.push(`Initialize BFS: Add node ${nodes[0].id} to queue`);
     setTraversalSteps(steps);
     await speedSleep(500);
 
@@ -117,7 +210,7 @@ export default function GraphPage() {
       setTraversalSteps([...steps]);
       await speedSleep(600);
 
-      const neighbors = adjacencyList[node];
+      const neighbors = adjacencyList[node] || [];
       const unvisitedNeighbors: number[] = [];
 
       for (const neighbor of neighbors) {
@@ -162,7 +255,7 @@ export default function GraphPage() {
   };
 
   const handleDFS = async () => {
-    if (isAnimating) return;
+    if (isAnimating || nodes.length === 0) return;
     setIsAnimating(true);
     setVisitedNodes([]);
     setTraversalOrder([]);
@@ -174,10 +267,11 @@ export default function GraphPage() {
     const visited = new Set<number>();
     const order: number[] = [];
     const steps: string[] = [];
+    const startNodeId = nodes[0].id;
 
-    steps.push("Initialize DFS: Call dfs(1)");
+    steps.push(`Initialize DFS: Call dfs(${startNodeId})`);
     setTraversalSteps(steps);
-    setRecursionStack({ stack: [1], returned: [] });
+    setRecursionStack({ stack: [startNodeId], returned: [] });
     await speedSleep(500);
 
     const dfsHelper = async (node: number) => {
@@ -190,7 +284,7 @@ export default function GraphPage() {
       setTraversalSteps([...steps]);
       await speedSleep(600);
 
-      const neighbors = adjacencyList[node];
+      const neighbors = adjacencyList[node] || [];
       const unvisitedNeighbors = neighbors.filter((n) => !visited.has(n));
 
       if (unvisitedNeighbors.length > 0) {
@@ -226,7 +320,7 @@ export default function GraphPage() {
       }
     };
 
-    await dfsHelper(1);
+    await dfsHelper(startNodeId);
 
     setActiveEdges([]);
     setActiveNode(null);
@@ -242,7 +336,7 @@ export default function GraphPage() {
     setTraversalOrder([]);
     setActiveNode(null);
     setActiveTraversal("idle");
-    setTraversalSteps(["Select a traversal method to begin exploring the graph."]);
+    setTraversalSteps(["Build your graph and select a traversal method."]);
     setQueueState({ queue: [], dequeued: [] });
     setActiveEdges([]);
     setRecursionStack({ stack: [], returned: [] });
@@ -253,207 +347,322 @@ export default function GraphPage() {
 
   return (
     <main className="min-h-screen bg-[#F1E8C7] px-4 py-10 text-[#4B5320] sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-6xl space-y-6">
+      <div className="mx-auto w-full max-w-7xl space-y-6">
         <Link href="/" className="inline-flex items-center text-sm font-medium text-[#556B2F] hover:text-[#4B5320]">
           &larr; Back to homepage
         </Link>
 
         <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)] sm:p-8">
-          <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Graph Visualizer</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Graph Builder & Visualizer</h1>
           <p className="mt-3 max-w-3xl text-[#556B2F]">
-            Interactive BFS and DFS Traversal Visualization
+            Create your own graphs and explore BFS and DFS traversal algorithms in real-time
           </p>
         </section>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
-              <h2 className="mb-4 text-lg font-semibold text-[#4B5320]">Graph Structure</h2>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+          <div className="lg:col-span-3">
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
+                <h2 className="mb-4 text-lg font-semibold text-[#4B5320]">Graph Canvas</h2>
 
-              <div className="flex justify-center overflow-x-auto rounded-2xl bg-[#F1E8C7] p-4">
-                <svg width={svgWidth} height={svgHeight} className="flex-shrink-0">
-                  {defaultEdges.map((edge, idx) => {
-                    const fromNode = defaultNodes.find((n) => n.id === edge.from)!;
-                    const toNode = defaultNodes.find((n) => n.id === edge.to)!;
-                    const x1 = (fromNode.x / 100) * svgWidth;
-                    const y1 = (fromNode.y / 100) * svgHeight;
-                    const x2 = (toNode.x / 100) * svgWidth;
-                    const y2 = (toNode.y / 100) * svgHeight;
+                <div className="flex justify-center overflow-x-auto rounded-2xl bg-[#F1E8C7] p-4">
+                  <svg
+                    width={svgWidth}
+                    height={svgHeight}
+                    className="flex-shrink-0 cursor-grab active:cursor-grabbing"
+                    onMouseDown={handleSvgMouseDown}
+                    onMouseMove={handleSvgMouseMove}
+                    onMouseUp={handleSvgMouseUp}
+                    onMouseLeave={handleSvgMouseUp}
+                    onClick={(e) => {
+                      if (isAnimating || draggingNode !== null) return;
+                      const svg = e.currentTarget;
+                      const rect = svg.getBoundingClientRect();
+                      const x = ((e.clientX - rect.left) / rect.width) * 100;
+                      const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-                    const isActive = activeEdges.some(
-                      (e) => (e.from === edge.from && e.to === edge.to) || (e.from === edge.to && e.to === edge.from)
-                    );
-
-                    return (
-                      <motion.line
-                        key={`edge-${idx}`}
-                        x1={x1}
-                        y1={y1}
-                        x2={x2}
-                        y2={y2}
-                        stroke={isActive ? "#7D8F3B" : "#D8CCA3"}
-                        strokeWidth={isActive ? "3" : "2"}
-                        animate={{
-                          opacity: isActive ? 1 : 0.6,
-                        }}
-                        transition={{ duration: 0.3 }}
-                        className="transition-all"
-                      />
-                    );
-                  })}
-
-                  <AnimatePresence>
-                    {defaultNodes.map((node) => {
-                      const x = (node.x / 100) * svgWidth;
-                      const y = (node.y / 100) * svgHeight;
-                      const isVisited = visitedNodes.includes(node.id);
-                      const isActive = activeNode === node.id;
-                      const nodeRadius = 24;
-
-                      let fillColor = "#F7F1DD";
-                      let strokeColor = "#D8CCA3";
-
-                      if (isActive) {
-                        fillColor = "#AAB76A";
-                        strokeColor = "#556B2F";
-                      } else if (isVisited) {
-                        fillColor = "#F1E8C7";
-                        strokeColor = "#7D8F3B";
+                      for (const node of nodes) {
+                        const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+                        if (distance < 5) {
+                          if (sourceNode === node.id) {
+                            setSourceNode(null);
+                          } else if (sourceNode === null) {
+                            setSourceNode(node.id);
+                          } else if (destNode === node.id) {
+                            setDestNode(null);
+                          } else {
+                            setDestNode(node.id);
+                          }
+                          return;
+                        }
                       }
+                    }}
+                  >
+                    {edges.map((edge, idx) => {
+                      const fromNode = nodes.find((n) => n.id === edge.from);
+                      const toNode = nodes.find((n) => n.id === edge.to);
+                      if (!fromNode || !toNode) return null;
+
+                      const x1 = (fromNode.x / 100) * svgWidth;
+                      const y1 = (fromNode.y / 100) * svgHeight;
+                      const x2 = (toNode.x / 100) * svgWidth;
+                      const y2 = (toNode.y / 100) * svgHeight;
+
+                      const isActive = activeEdges.some(
+                        (e) => (e.from === edge.from && e.to === edge.to) || (e.from === edge.to && e.to === edge.from)
+                      );
 
                       return (
-                        <motion.g
-                          key={`node-${node.id}`}
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          whileHover={{ scale: 1.15 }}
-                          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                        >
-                          <motion.circle
-                            cx={x}
-                            cy={y}
-                            r={nodeRadius}
-                            fill={fillColor}
-                            stroke={strokeColor}
-                            strokeWidth={isActive ? "4" : "3"}
-                            animate={{
-                              r: isActive ? 28 : nodeRadius,
-                            }}
-                            transition={{ duration: 0.3 }}
-                            className="transition-all duration-300"
-                          />
-                          <text
-                            x={x}
-                            y={y}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            className="pointer-events-none text-sm font-bold"
-                            fill="#4B5320"
-                          >
-                            {node.id}
-                          </text>
-                        </motion.g>
+                        <motion.line
+                          key={`edge-${idx}`}
+                          x1={x1}
+                          y1={y1}
+                          x2={x2}
+                          y2={y2}
+                          stroke={isActive ? "#7D8F3B" : "#D8CCA3"}
+                          strokeWidth={isActive ? "3" : "2"}
+                          animate={{
+                            opacity: isActive ? 1 : 0.6,
+                          }}
+                          transition={{ duration: 0.3 }}
+                          className="transition-all"
+                        />
                       );
                     })}
-                  </AnimatePresence>
-                </svg>
+
+                    <AnimatePresence>
+                      {nodes.map((node) => {
+                        const x = (node.x / 100) * svgWidth;
+                        const y = (node.y / 100) * svgHeight;
+                        const isVisited = visitedNodes.includes(node.id);
+                        const isActive = activeNode === node.id;
+                        const isSourceOrDest = sourceNode === node.id || destNode === node.id;
+                        const nodeRadius = 24;
+
+                        let fillColor = "#F7F1DD";
+                        let strokeColor = "#D8CCA3";
+
+                        if (isActive) {
+                          fillColor = "#AAB76A";
+                          strokeColor = "#556B2F";
+                        } else if (isSourceOrDest) {
+                          fillColor = "#FED66A";
+                          strokeColor = "#AAB76A";
+                        } else if (isVisited) {
+                          fillColor = "#F1E8C7";
+                          strokeColor = "#7D8F3B";
+                        }
+
+                        return (
+                          <motion.g
+                            key={`node-${node.id}`}
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            whileHover={{ scale: 1.15 }}
+                            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                          >
+                            <motion.circle
+                              cx={x}
+                              cy={y}
+                              r={nodeRadius}
+                              fill={fillColor}
+                              stroke={strokeColor}
+                              strokeWidth={isSourceOrDest ? "4" : isActive ? "4" : "3"}
+                              animate={{
+                                r: isActive ? 28 : isSourceOrDest ? 26 : nodeRadius,
+                              }}
+                              transition={{ duration: 0.3 }}
+                              className="transition-all duration-300"
+                            />
+                            <text
+                              x={x}
+                              y={y}
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                              className="pointer-events-none text-sm font-bold"
+                              fill="#4B5320"
+                            >
+                              {node.id}
+                            </text>
+                          </motion.g>
+                        );
+                      })}
+                    </AnimatePresence>
+                  </svg>
+                </div>
+
+                {nodes.length === 0 && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mt-6 rounded-2xl border-2 border-dashed border-[#D8CCA3] bg-[#F1E8C7] p-8 text-center"
+                  >
+                    <p className="text-sm text-[#556B2F]">Create nodes to start building your graph</p>
+                  </motion.div>
+                )}
+
+                <div className="mt-4 rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Traversal Order</p>
+                  <p className="mt-2 text-sm font-mono text-[#4B5320]">
+                    {traversalOrder.length > 0 ? traversalOrder.join(" → ") : "—"}
+                  </p>
+                </div>
+
+                {activeTraversal === "bfs" && (queueState.queue.length > 0 || queueState.dequeued.length > 0) && (
+                  <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Queue State (FIFO)</p>
+                    <div className="mt-3 space-y-2">
+                      {queueState.queue.length > 0 && (
+                        <div>
+                          <p className="text-xs font-medium text-[#556B2F]">Current Queue:</p>
+                          <div className="mt-1 flex flex-wrap gap-2">
+                            {queueState.queue.map((node, idx) => (
+                              <motion.div
+                                key={`queue-${node}-${idx}`}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="rounded-lg border border-[#7D8F3B] bg-white px-2 py-1 text-xs font-mono text-[#4B5320]"
+                              >
+                                {node}
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {queueState.dequeued.length > 0 && (
+                        <div>
+                          <p className="text-xs font-medium text-[#556B2F]">Dequeued:</p>
+                          <div className="mt-1 flex flex-wrap gap-2">
+                            {queueState.dequeued.map((node, idx) => (
+                              <motion.div
+                                key={`dequeued-${node}-${idx}`}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="rounded-lg border border-[#D8CCA3] bg-[#F1E8C7] px-2 py-1 text-xs font-mono text-[#556B2F] line-through"
+                              >
+                                {node}
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {activeTraversal === "dfs" && (recursionStack.stack.length > 0 || recursionStack.returned.length > 0) && (
+                  <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Recursion Stack (LIFO)</p>
+                    <div className="mt-3 space-y-2">
+                      {recursionStack.stack.length > 0 && (
+                        <div>
+                          <p className="text-xs font-medium text-[#556B2F]">Call Stack:</p>
+                          <div className="mt-1 flex flex-col gap-1">
+                            {recursionStack.stack.map((node, idx) => (
+                              <motion.div
+                                key={`stack-${node}-${idx}`}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="rounded-lg border border-[#7D8F3B] bg-white px-2 py-1 text-xs font-mono text-[#4B5320]"
+                                style={{ marginLeft: `${idx * 12}px` }}
+                              >
+                                dfs({node})
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {recursionStack.returned.length > 0 && (
+                        <div>
+                          <p className="text-xs font-medium text-[#556B2F]">Returned:</p>
+                          <div className="mt-1 flex flex-wrap gap-2">
+                            {recursionStack.returned.map((node, idx) => (
+                              <motion.div
+                                key={`returned-${node}-${idx}`}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="rounded-lg border border-[#D8CCA3] bg-[#F1E8C7] px-2 py-1 text-xs font-mono text-[#556B2F] line-through"
+                              >
+                                {node}
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="mt-4 rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Traversal Order</p>
-                <p className="mt-2 text-sm font-mono text-[#4B5320]">
-                  {traversalOrder.length > 0 ? traversalOrder.join(" → ") : "—"}
-                </p>
+              <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
+                <h2 className="mb-4 text-lg font-semibold text-[#4B5320]">Adjacency List</h2>
+                <div className="space-y-2 text-sm text-[#4B5320] font-mono">
+                  {nodes.length === 0 ? (
+                    <p className="text-[#556B2F]">No nodes yet</p>
+                  ) : (
+                    nodes.map((node) => (
+                      <div key={node.id} className="flex items-center gap-2">
+                        <span className="font-semibold text-[#7D8F3B]">{node.id}</span>
+                        <span className="text-[#556B2F]">→</span>
+                        <span>{(adjacencyList[node.id] || []).length > 0 ? `[${adjacencyList[node.id].join(", ")}]` : "[]"}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
-
-              {activeTraversal === "bfs" && (queueState.queue.length > 0 || queueState.dequeued.length > 0) && (
-                <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Queue State (FIFO)</p>
-                  <div className="mt-3 space-y-2">
-                    {queueState.queue.length > 0 && (
-                      <div>
-                        <p className="text-xs font-medium text-[#556B2F]">Current Queue:</p>
-                        <div className="mt-1 flex flex-wrap gap-2">
-                          {queueState.queue.map((node, idx) => (
-                            <motion.div
-                              key={`queue-${node}-${idx}`}
-                              initial={{ scale: 0.8, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              className="rounded-lg border border-[#7D8F3B] bg-white px-2 py-1 text-xs font-mono text-[#4B5320]"
-                            >
-                              {node}
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {queueState.dequeued.length > 0 && (
-                      <div>
-                        <p className="text-xs font-medium text-[#556B2F]">Dequeued:</p>
-                        <div className="mt-1 flex flex-wrap gap-2">
-                          {queueState.dequeued.map((node, idx) => (
-                            <motion.div
-                              key={`dequeued-${node}-${idx}`}
-                              initial={{ scale: 0.8, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              className="rounded-lg border border-[#D8CCA3] bg-[#F1E8C7] px-2 py-1 text-xs font-mono text-[#556B2F] line-through"
-                            >
-                              {node}
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {activeTraversal === "dfs" && (recursionStack.stack.length > 0 || recursionStack.returned.length > 0) && (
-                <div className="mt-4 rounded-2xl border border-[#AAB76A] bg-[#F7F1DD] p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Recursion Stack (LIFO)</p>
-                  <div className="mt-3 space-y-2">
-                    {recursionStack.stack.length > 0 && (
-                      <div>
-                        <p className="text-xs font-medium text-[#556B2F]">Call Stack:</p>
-                        <div className="mt-1 flex flex-col gap-1">
-                          {recursionStack.stack.map((node, idx) => (
-                            <motion.div
-                              key={`stack-${node}-${idx}`}
-                              initial={{ scale: 0.8, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              className="rounded-lg border border-[#7D8F3B] bg-white px-2 py-1 text-xs font-mono text-[#4B5320]"
-                              style={{ marginLeft: `${idx * 12}px` }}
-                            >
-                              dfs({node})
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {recursionStack.returned.length > 0 && (
-                      <div>
-                        <p className="text-xs font-medium text-[#556B2F]">Returned:</p>
-                        <div className="mt-1 flex flex-wrap gap-2">
-                          {recursionStack.returned.map((node, idx) => (
-                            <motion.div
-                              key={`returned-${node}-${idx}`}
-                              initial={{ scale: 0.8, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              className="rounded-lg border border-[#D8CCA3] bg-[#F1E8C7] px-2 py-1 text-xs font-mono text-[#556B2F] line-through"
-                            >
-                              {node}
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
           <div className="flex flex-col gap-6">
+            <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
+              <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[#4B5320]">
+                <Settings className="h-4 w-4" /> Graph Builder
+              </h3>
+
+              <div className="space-y-3">
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleAddNode}
+                  disabled={isAnimating}
+                  className="w-full rounded-xl bg-[#7D8F3B] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#556B2F] disabled:opacity-50"
+                >
+                  <Plus className="mb-1 inline h-4 w-4" /> Add Node
+                </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleConnectNodes}
+                  disabled={sourceNode === null || destNode === null || isAnimating}
+                  className="w-full rounded-xl bg-[#9CA763] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#7D8F3B] disabled:opacity-50"
+                >
+                  <Zap className="mb-1 inline h-4 w-4" /> Connect Nodes
+                </motion.button>
+
+                {(sourceNode !== null || destNode !== null) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-3 text-xs text-[#556B2F]"
+                  >
+                    {sourceNode !== null && destNode !== null
+                      ? `Connect node ${sourceNode} → ${destNode}`
+                      : sourceNode !== null
+                        ? `Source: Node ${sourceNode} (click another to set destination)`
+                        : `Destination: Node ${destNode} (click another to set source)`}
+                  </motion.div>
+                )}
+
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleClearGraph}
+                  disabled={isAnimating || nodes.length === 0}
+                  className="w-full rounded-xl border-2 border-red-300 bg-white px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                >
+                  <Trash2 className="mb-1 inline h-4 w-4" /> Clear Graph
+                </motion.button>
+              </div>
+            </div>
+
             <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
               <h3 className="mb-4 text-lg font-semibold text-[#4B5320]">Traversal Controls</h3>
 
@@ -479,14 +688,19 @@ export default function GraphPage() {
                     <span className="text-xs font-medium text-[#556B2F]">Fast</span>
                   </div>
                   <div className="mt-2 text-xs text-[#556B2F]">
-                    {speed === "slow" ? "More time to understand each step" : speed === "fast" ? "Quick overview of the traversal" : "Balanced pace for learning"}
+                    {speed === "slow"
+                      ? "More time to understand each step"
+                      : speed === "fast"
+                        ? "Quick overview of the traversal"
+                        : "Balanced pace for learning"}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleBFS}
-                    disabled={isAnimating}
+                    disabled={isAnimating || nodes.length === 0}
                     className={`w-full rounded-xl px-4 py-2.5 text-sm font-medium text-white transition ${
                       isAnimating && activeTraversal === "bfs"
                         ? "bg-[#7D8F3B] ring-2 ring-[#556B2F]"
@@ -494,10 +708,11 @@ export default function GraphPage() {
                     } disabled:opacity-50`}
                   >
                     <Zap className="mb-1 inline h-4 w-4" /> Run BFS
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleDFS}
-                    disabled={isAnimating}
+                    disabled={isAnimating || nodes.length === 0}
                     className={`w-full rounded-xl px-4 py-2.5 text-sm font-medium text-white transition ${
                       isAnimating && activeTraversal === "dfs"
                         ? "bg-[#9CA763] ring-2 ring-[#556B2F]"
@@ -505,14 +720,15 @@ export default function GraphPage() {
                     } disabled:opacity-50`}
                   >
                     <Zap className="mb-1 inline h-4 w-4" /> Run DFS
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleReset}
                     disabled={isAnimating}
                     className="w-full rounded-xl border-2 border-[#7D8F3B] bg-white px-4 py-2.5 text-sm font-medium text-[#7D8F3B] transition hover:bg-[#F1E8C7] disabled:opacity-50"
                   >
-                    <RotateCcw className="mb-1 inline h-4 w-4" /> Reset Graph
-                  </button>
+                    <RotateCcw className="mb-1 inline h-4 w-4" /> Reset
+                  </motion.button>
                 </div>
               </div>
             </div>
