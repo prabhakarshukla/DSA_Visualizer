@@ -2,7 +2,26 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Plus, Trash2, Settings, RotateCcw, Play, Pause, Zap, Info } from "lucide-react";
+import {
+  ArrowRight,
+  Plus,
+  Trash2,
+  Settings,
+  RotateCcw,
+  Play,
+  Pause,
+  Zap,
+  Info,
+  Sliders,
+  Download,
+  Edit2,
+  Layers,
+  TrendingUp,
+  BookOpen,
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import { useState, useMemo } from "react";
 
 type GraphNode = {
@@ -35,6 +54,18 @@ type VisualizationStep = {
   type?: "init" | "select" | "relax" | "skip" | "complete";
 };
 
+type GraphDensity = "sparse" | "medium" | "dense";
+
+type AlgorithmSnapshot = {
+  step: number;
+  state: DijkstraState;
+  explanation: string;
+};
+
+type EditMode = "select" | "addNode" | "addEdge" | "editWeight" | null;
+
+type ExecutionMode = "auto" | "manual";
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const generateNodePosition = (nodeCount: number, index: number) => {
@@ -57,10 +88,12 @@ const getSpeedMultiplier = (speedLevel: SpeedLevel) => {
 };
 
 export default function DijkstraPage() {
+  // Graph state
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [edges, setEdges] = useState<WeightedEdge[]>([]);
   const [nextNodeId, setNextNodeId] = useState(1);
 
+  // Algorithm state
   const [algorithmState, setAlgorithmState] = useState<AlgorithmState>("idle");
   const [dijkstraState, setDijkstraState] = useState<DijkstraState>({
     unvisited: new Set(),
@@ -71,6 +104,12 @@ export default function DijkstraPage() {
     priorityQueue: [],
   });
 
+  // Execution mode
+  const [executionMode, setExecutionMode] = useState<ExecutionMode>("auto");
+  const [currentStep, setCurrentStep] = useState(0);
+  const [snapshots, setSnapshots] = useState<AlgorithmSnapshot[]>([]);
+
+  // UI state
   const [sourceNode, setSourceNode] = useState<number | null>(null);
   const [destinationNode, setDestinationNode] = useState<number | null>(null);
   const [speed, setSpeed] = useState<SpeedLevel>("medium");
@@ -79,12 +118,18 @@ export default function DijkstraPage() {
   ]);
   const [activeEdge, setActiveEdge] = useState<{ from: number; to: number } | null>(null);
   const [relaxingEdge, setRelaxingEdge] = useState<{ from: number; to: number; weight: number } | null>(null);
-  const [relaxationImproved, setRelaxationImproved] = useState(false);
   const [draggingNode, setDraggingNode] = useState<number | null>(null);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [sourceOrDestMode, setSourceOrDestMode] = useState<"source" | "dest" | null>(null);
   const [nodesProcessed, setNodesProcessed] = useState(0);
   const [distancesUpdated, setDistancesUpdated] = useState(0);
+  const [editMode, setEditMode] = useState<EditMode>(null);
+  const [graphDensity, setGraphDensity] = useState<GraphDensity>("medium");
+  const [showGenerateOptions, setShowGenerateOptions] = useState(false);
+  const [nodeCountInput, setNodeCountInput] = useState(8);
+  const [maxWeightInput, setMaxWeightInput] = useState(10);
+  const [showLegend, setShowLegend] = useState(false);
+  const [expandedInfoCard, setExpandedInfoCard] = useState<number | null>(null);
 
   const speedSleep = (ms: number) => sleep(ms * getSpeedMultiplier(speed));
 
@@ -99,6 +144,10 @@ export default function DijkstraPage() {
     });
     return list;
   }, [nodes, edges]);
+
+  const hasNegativeWeights = useMemo(() => {
+    return edges.some((e) => e.weight < 0);
+  }, [edges]);
 
   const shortestPath = useMemo(() => {
     if (!destinationNode || algorithmState !== "completed") return null;
@@ -129,6 +178,27 @@ export default function DijkstraPage() {
     return pathEdges;
   }, [shortestPath]);
 
+  // Calculate total path cost
+  const totalPathCost = useMemo(() => {
+    if (!shortestPath?.path) return 0;
+    let cost = 0;
+    for (let i = 0; i < shortestPath.path.length - 1; i++) {
+      const from = shortestPath.path[i];
+      const to = shortestPath.path[i + 1];
+      const edge = edges.find(
+        (e) => (e.from === from && e.to === to) || (e.from === to && e.to === from)
+      );
+      if (edge) cost += edge.weight;
+    }
+    return cost;
+  }, [shortestPath, edges]);
+
+  // Progress tracking
+  const progressPercentage = useMemo(() => {
+    if (nodes.length === 0) return 0;
+    return Math.round((nodesProcessed / nodes.length) * 100);
+  }, [nodesProcessed, nodes.length]);
+
   const handleAddNode = () => {
     const newId = nextNodeId;
     const position = generateNodePosition(nodes.length, nodes.length);
@@ -143,26 +213,8 @@ export default function DijkstraPage() {
     if (destinationNode === id) setDestinationNode(null);
   };
 
-  const handleAddEdge = (from: number, to: number, weight: number) => {
-    if (from === to) return;
-
-    const edgeExists = edges.some(
-      (e) => (e.from === from && e.to === to) || (e.from === to && e.to === from)
-    );
-
-    if (!edgeExists) {
-      setEdges([...edges, { from, to, weight }]);
-    }
-
-    setSourceOrDestMode(null);
-  };
-
-  const handleDeleteEdge = (from: number, to: number) => {
-    setEdges(edges.filter((e) => !((e.from === from && e.to === to) || (e.from === to && e.to === from))));
-  };
-
-  const handleGenerateGraph = () => {
-    const nodeCount = Math.floor(Math.random() * 3) + 6;
+  const handleGenerateGraphWithConfig = (config: { nodes: number; density: GraphDensity; maxWeight: number }) => {
+    const nodeCount = config.nodes;
     const newNodes: GraphNode[] = [];
     for (let i = 0; i < nodeCount; i++) {
       const position = generateNodePosition(nodeCount, i);
@@ -170,11 +222,15 @@ export default function DijkstraPage() {
     }
 
     const newEdges: WeightedEdge[] = [];
-    const edgeCount = Math.floor(Math.random() * 5) + 8;
-    for (let i = 0; i < edgeCount; i++) {
+
+    // Calculate density ratio
+    const densityRatio = config.density === "sparse" ? 0.2 : config.density === "medium" ? 0.5 : 0.8;
+    const maxEdges = Math.floor((nodeCount * (nodeCount - 1)) / 2 * densityRatio);
+
+    for (let i = 0; i < maxEdges; i++) {
       const from = newNodes[Math.floor(Math.random() * newNodes.length)].id;
       const to = newNodes[Math.floor(Math.random() * newNodes.length)].id;
-      const weight = Math.floor(Math.random() * 9) + 1;
+      const weight = Math.floor(Math.random() * (config.maxWeight - 1)) + 1;
       if (from !== to) {
         const exists = newEdges.some(
           (e) => (e.from === from && e.to === to) || (e.from === to && e.to === from)
@@ -189,6 +245,9 @@ export default function DijkstraPage() {
     setEdges(newEdges);
     setNextNodeId(nodeCount + 1);
     handleReset();
+    setSourceNode(1);
+    setDestinationNode(nodeCount);
+    setShowGenerateOptions(false);
   };
 
   const handleClearGraph = () => {
@@ -201,7 +260,7 @@ export default function DijkstraPage() {
   };
 
   const handleSvgMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (algorithmState === "running") return;
+    if (algorithmState === "running" || editMode === "addEdge") return;
     const svg = e.currentTarget;
     const rect = svg.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -210,6 +269,7 @@ export default function DijkstraPage() {
     for (const node of nodes) {
       const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
       if (distance < 5) {
+        if (editMode === "addNode") return;
         setDraggingNode(node.id);
         setDragStart({ x: x - node.x, y: y - node.y });
         return;
@@ -218,7 +278,7 @@ export default function DijkstraPage() {
   };
 
   const handleSvgMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (draggingNode === null) return;
+    if (draggingNode === null || editMode === "addEdge") return;
 
     const svg = e.currentTarget;
     const rect = svg.getBoundingClientRect();
@@ -246,6 +306,15 @@ export default function DijkstraPage() {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
+    // Handle add node mode
+    if (editMode === "addNode") {
+      const newId = nextNodeId;
+      setNodes([...nodes, { id: newId, x, y }]);
+      setNextNodeId(newId + 1);
+      return;
+    }
+
+    // Handle source/dest selection
     for (const node of nodes) {
       const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
       if (distance < 5) {
@@ -276,10 +345,18 @@ export default function DijkstraPage() {
     setRelaxingEdge(null);
     setNodesProcessed(0);
     setDistancesUpdated(0);
+    setCurrentStep(0);
+    setSnapshots([]);
   };
 
   const handleStartAlgorithm = async () => {
     if (sourceNode === null || nodes.length === 0) return;
+    if (hasNegativeWeights) {
+      alert(
+        "⚠️ Dijkstra does not support negative edge weights. Results may be incorrect.\nPlease use Bellman-Ford algorithm instead."
+      );
+      return;
+    }
 
     setAlgorithmState("running");
     setSteps([]);
@@ -287,6 +364,8 @@ export default function DijkstraPage() {
     setRelaxingEdge(null);
     setNodesProcessed(0);
     setDistancesUpdated(0);
+    setCurrentStep(0);
+    setSnapshots([]);
 
     const distances: Record<number, number> = {};
     const previous: Record<number, number | null> = {};
@@ -315,7 +394,22 @@ export default function DijkstraPage() {
       { explanation: `Set distance[${sourceNode}] = 0, all others = ∞`, type: "init" },
       { explanation: `Added node ${sourceNode} to priority queue`, type: "init" },
     ]);
-    await speedSleep(1200);
+
+    // Save initial snapshot
+    let snapshotIdx = 0;
+    const newSnapshots: AlgorithmSnapshot[] = [
+      {
+        step: snapshotIdx++,
+        state: { unvisited: new Set(unvisited), distances: { ...distances }, previous: { ...previous }, visited: new Set(visited), currentNode: sourceNode, priorityQueue: [] },
+        explanation: "Initialize: All nodes unvisited",
+      },
+    ];
+
+    if (executionMode === "manual") {
+      await speedSleep(1200);
+    } else {
+      await speedSleep(1200);
+    }
 
     let processed = 0;
     let updated = 0;
@@ -333,6 +427,12 @@ export default function DijkstraPage() {
 
       if (minNode === null || minDistance === Infinity) {
         break;
+      }
+
+      if (executionMode === "manual") {
+        while (algorithmState === "paused") {
+          await sleep(100);
+        }
       }
 
       setDijkstraState((prev) => ({
@@ -383,7 +483,6 @@ export default function DijkstraPage() {
             updated++;
             setDistancesUpdated(updated);
 
-            setRelaxationImproved(true);
             setSteps((prev) => [
               ...prev,
               {
@@ -400,7 +499,6 @@ export default function DijkstraPage() {
 
             await speedSleep(600);
           } else {
-            setRelaxationImproved(false);
             setSteps((prev) => [
               ...prev,
               {
@@ -425,10 +523,25 @@ export default function DijkstraPage() {
         previous: { ...previous },
       }));
 
+      // Save snapshot
+      newSnapshots.push({
+        step: snapshotIdx++,
+        state: {
+          unvisited: new Set(unvisited),
+          distances: { ...distances },
+          previous: { ...previous },
+          visited: new Set(visited),
+          currentNode: minNode,
+          priorityQueue: [],
+        },
+        explanation: `Processed node ${minNode}`,
+      });
+
       setActiveEdge(null);
       await speedSleep(500);
     }
 
+    setSnapshots(newSnapshots);
     setAlgorithmState("completed");
     setDijkstraState((prev) => ({
       ...prev,
@@ -454,8 +567,42 @@ export default function DijkstraPage() {
     }
   };
 
+  const handleNextStep = () => {
+    if (currentStep < snapshots.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePreviousStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
   const svgHeight = 400;
   const svgWidth = 600;
+
+  // Educational info cards data
+  const infoCards = [
+    {
+      title: "What is Dijkstra?",
+      content:
+        "Dijkstra's algorithm finds the shortest path from a source node to all other nodes in a weighted graph with non-negative weights. It uses a greedy approach, always picking the unvisited node with minimum distance.",
+      icon: "🎯",
+    },
+    {
+      title: "Why Does Greedy Work?",
+      content:
+        "Dijkstra's greedy choice (always pick minimum distance node) is optimal because once we visit a node, we've found its true shortest distance. No unvisited node can offer a shorter path through remaining nodes since all weights are non-negative.",
+      icon: "⚡",
+    },
+    {
+      title: "When Dijkstra Fails?",
+      content:
+        "Dijkstra assumes non-negative edge weights. If negative weights exist: (1) The algorithm may not find correct shortest paths (2) Negative cycles make 'shortest' undefined. Use Bellman-Ford instead for negative weights.",
+      icon: "⚠️",
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-[#F1E8C7] px-4 py-10 text-[#4B5320] sm:px-6 lg:px-8">
@@ -483,10 +630,26 @@ export default function DijkstraPage() {
           &larr; Back to graphs
         </Link>
 
+        {hasNegativeWeights && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl border-2 border-red-400 bg-red-50 p-4 flex items-start gap-3"
+          >
+            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-red-900">Negative Weights Detected</p>
+              <p className="text-sm text-red-700 mt-1">
+                Dijkstra does not support negative edge weights. Results may be incorrect. Please use Bellman-Ford algorithm instead.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         <section className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)] sm:p-8">
-          <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Dijkstra Algorithm Visualizer</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-[#4B5320] sm:text-4xl">Premium Dijkstra Simulator</h1>
           <p className="mt-3 max-w-3xl text-[#556B2F]">
-            Visualize shortest path calculation step-by-step using weighted graphs.
+            Interactive shortest path visualization with advanced controls, educational insights, and step-by-step execution.
           </p>
         </section>
 
@@ -550,7 +713,7 @@ export default function DijkstraPage() {
                             x={midX}
                             y={midY - 5}
                             textAnchor="middle"
-                            className={`text-xs font-bold ${isOnPath ? "fill-[#4B5320]" : "fill-[#556B2F]"}`}
+                            className={`text-xs font-bold ${isOnPath ? "fill-[#4B5320]" : edge.weight < 0 ? "fill-red-600" : "fill-[#556B2F]"}`}
                           >
                             {edge.weight}
                           </text>
@@ -694,6 +857,71 @@ export default function DijkstraPage() {
                 </div>
               </div>
 
+              {/* Route Summary Panel */}
+              {algorithmState === "completed" && shortestPath && destinationNode !== null && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-3xl border-2 border-[#7D8F3B] bg-gradient-to-br from-[#F7F1DD] to-[#F1E8C7] p-6 shadow-[0_10px_30px_rgba(75,83,32,0.15)]"
+                >
+                  <h2 className="mb-4 text-lg font-semibold text-[#4B5320] flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" /> Route Summary
+                  </h2>
+
+                  <div className="space-y-4">
+                    {/* Path visualization */}
+                    <div className="rounded-2xl bg-white p-4 border border-[#D8CCA3]">
+                      <p className="text-xs font-semibold text-[#556B2F] mb-2">SHORTEST PATH</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {shortestPath.path.map((nodeId, idx) => (
+                          <motion.div
+                            key={`path-${nodeId}`}
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="flex items-center gap-2"
+                          >
+                            <div className="rounded-full bg-[#4B5320] text-white px-3 py-1 text-sm font-bold">
+                              {nodeId}
+                            </div>
+                            {idx < shortestPath.path.length - 1 && <span className="text-[#7D8F3B] font-bold">→</span>}
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Cost breakdown */}
+                    <div className="rounded-2xl bg-white p-4 border border-[#D8CCA3]">
+                      <p className="text-xs font-semibold text-[#556B2F] mb-2">EDGE COSTS</p>
+                      <div className="space-y-1 text-sm font-mono">
+                        {shortestPath.path.map((node, idx) => {
+                          if (idx >= shortestPath.path.length - 1) return null;
+                          const nextNode = shortestPath.path[idx + 1];
+                          const edge = edges.find(
+                            (e) => (e.from === node && e.to === nextNode) || (e.from === nextNode && e.to === node)
+                          );
+                          return (
+                            <div key={`edge-cost-${idx}`} className="flex justify-between text-[#4B5320]">
+                              <span>
+                                {node} → {nextNode}
+                              </span>
+                              <span className="font-bold text-[#7D8F3B]">{edge?.weight || 0}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Total cost */}
+                    <div className="rounded-2xl bg-[#AAB76A] p-4 text-white">
+                      <p className="text-xs font-semibold opacity-80">TOTAL PATH COST</p>
+                      <p className="text-3xl font-bold mt-2">{totalPathCost}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Priority Queue */}
               <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
                 <h2 className="mb-4 text-lg font-semibold text-[#4B5320]">Priority Queue</h2>
                 <div className="flex flex-wrap gap-2 rounded-2xl bg-[#F1E8C7] p-4">
@@ -722,7 +950,9 @@ export default function DijkstraPage() {
             </div>
           </div>
 
+          {/* Sidebar */}
           <div className="flex flex-col gap-6">
+            {/* Graph Builder */}
             <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
               <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[#4B5320]">
                 <Settings className="h-4 w-4" /> Graph Builder
@@ -737,6 +967,80 @@ export default function DijkstraPage() {
                 >
                   <Plus className="mb-1 inline h-4 w-4" /> Add Node
                 </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowGenerateOptions(!showGenerateOptions)}
+                  disabled={algorithmState === "running"}
+                  className="w-full rounded-xl border-2 border-[#7D8F3B] bg-white px-4 py-2.5 text-sm font-medium text-[#7D8F3B] transition hover:bg-[#F1E8C7] disabled:opacity-50"
+                >
+                  <Download className="mb-1 inline h-4 w-4" /> Generate Graph
+                </motion.button>
+
+                {showGenerateOptions && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="rounded-xl bg-[#F1E8C7] p-3 space-y-3 text-sm"
+                  >
+                    <div>
+                      <label className="text-xs font-semibold text-[#556B2F]">Nodes: {nodeCountInput}</label>
+                      <input
+                        type="range"
+                        min="5"
+                        max="20"
+                        value={nodeCountInput}
+                        onChange={(e) => setNodeCountInput(parseInt(e.target.value))}
+                        className="w-full mt-1 accent-[#7D8F3B]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold text-[#556B2F]">Density</label>
+                      <div className="flex gap-2 mt-1">
+                        {(["sparse", "medium", "dense"] as const).map((d) => (
+                          <button
+                            key={d}
+                            onClick={() => setGraphDensity(d)}
+                            className={`flex-1 rounded px-2 py-1 text-xs font-medium transition ${
+                              graphDensity === d
+                                ? "bg-[#7D8F3B] text-white"
+                                : "bg-white border border-[#D8CCA3] text-[#556B2F]"
+                            }`}
+                          >
+                            {d.charAt(0).toUpperCase() + d.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-semibold text-[#556B2F]">Max Weight: {maxWeightInput}</label>
+                      <input
+                        type="range"
+                        min="1"
+                        max="20"
+                        value={maxWeightInput}
+                        onChange={(e) => setMaxWeightInput(parseInt(e.target.value))}
+                        className="w-full mt-1 accent-[#7D8F3B]"
+                      />
+                    </div>
+
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() =>
+                        handleGenerateGraphWithConfig({
+                          nodes: nodeCountInput,
+                          density: graphDensity,
+                          maxWeight: maxWeightInput,
+                        })
+                      }
+                      className="w-full rounded-lg bg-[#7D8F3B] px-3 py-2 text-xs font-semibold text-white hover:bg-[#556B2F]"
+                    >
+                      Generate
+                    </motion.button>
+                  </motion.div>
+                )}
 
                 <motion.button
                   whileTap={{ scale: 0.98 }}
@@ -786,15 +1090,6 @@ export default function DijkstraPage() {
 
                 <motion.button
                   whileTap={{ scale: 0.98 }}
-                  onClick={handleGenerateGraph}
-                  disabled={algorithmState === "running"}
-                  className="w-full rounded-xl border-2 border-[#7D8F3B] bg-white px-4 py-2.5 text-sm font-medium text-[#7D8F3B] transition hover:bg-[#F1E8C7] disabled:opacity-50"
-                >
-                  <Zap className="mb-1 inline h-4 w-4" /> Generate Graph
-                </motion.button>
-
-                <motion.button
-                  whileTap={{ scale: 0.98 }}
                   onClick={handleClearGraph}
                   disabled={algorithmState === "running" || nodes.length === 0}
                   className="w-full rounded-xl border-2 border-red-300 bg-white px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-50"
@@ -804,10 +1099,39 @@ export default function DijkstraPage() {
               </div>
             </div>
 
+            {/* Algorithm Controls */}
             <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
               <h3 className="mb-4 text-lg font-semibold text-[#4B5320]">Algorithm Controls</h3>
 
               <div className="space-y-4">
+                <div className="rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">
+                    Execution: {executionMode === "auto" ? "Autoplay" : "Manual"}
+                  </label>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      onClick={() => setExecutionMode("auto")}
+                      className={`flex-1 rounded px-2 py-1 text-xs font-medium transition ${
+                        executionMode === "auto"
+                          ? "bg-[#7D8F3B] text-white"
+                          : "bg-white border border-[#D8CCA3]"
+                      }`}
+                    >
+                      Auto
+                    </button>
+                    <button
+                      onClick={() => setExecutionMode("manual")}
+                      className={`flex-1 rounded px-2 py-1 text-xs font-medium transition ${
+                        executionMode === "manual"
+                          ? "bg-[#7D8F3B] text-white"
+                          : "bg-white border border-[#D8CCA3]"
+                      }`}
+                    >
+                      Manual
+                    </button>
+                  </div>
+                </div>
+
                 <div className="rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
                   <label className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">
                     Speed: {speed.charAt(0).toUpperCase() + speed.slice(1)}
@@ -831,14 +1155,16 @@ export default function DijkstraPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleStartAlgorithm}
-                    disabled={algorithmState === "running" || sourceNode === null || nodes.length === 0}
-                    className="w-full rounded-xl bg-[#7D8F3B] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#556B2F] disabled:opacity-50"
-                  >
-                    <Play className="mb-1 inline h-4 w-4" /> Start Algorithm
-                  </motion.button>
+                  {algorithmState === "idle" && (
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleStartAlgorithm}
+                      disabled={sourceNode === null || nodes.length === 0}
+                      className="w-full rounded-xl bg-[#7D8F3B] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#556B2F] disabled:opacity-50"
+                    >
+                      <Play className="mb-1 inline h-4 w-4" /> Start Algorithm
+                    </motion.button>
+                  )}
 
                   {algorithmState === "running" && (
                     <motion.button
@@ -860,6 +1186,25 @@ export default function DijkstraPage() {
                     </motion.button>
                   )}
 
+                  {(algorithmState === "paused" || algorithmState === "completed") && executionMode === "manual" && (
+                    <>
+                      <button
+                        onClick={handlePreviousStep}
+                        disabled={currentStep === 0}
+                        className="w-full rounded-xl border-2 border-[#7D8F3B] bg-white px-4 py-2 text-sm font-medium text-[#7D8F3B] transition hover:bg-[#F1E8C7] disabled:opacity-30"
+                      >
+                        ← Previous Step
+                      </button>
+                      <button
+                        onClick={handleNextStep}
+                        disabled={currentStep >= snapshots.length - 1}
+                        className="w-full rounded-xl border-2 border-[#7D8F3B] bg-white px-4 py-2 text-sm font-medium text-[#7D8F3B] transition hover:bg-[#F1E8C7] disabled:opacity-30"
+                      >
+                        Next Step →
+                      </button>
+                    </>
+                  )}
+
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={handleReset}
@@ -872,6 +1217,43 @@ export default function DijkstraPage() {
               </div>
             </div>
 
+            {/* Progress Tracking */}
+            {algorithmState !== "idle" && (
+              <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
+                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[#4B5320]">
+                  <TrendingUp className="h-4 w-4" /> Progress
+                </h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-xs font-semibold text-[#556B2F]">Completion</span>
+                      <span className="text-xs font-bold text-[#7D8F3B]">{progressPercentage}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-[#F1E8C7] overflow-hidden">
+                      <motion.div
+                        className="h-full bg-[#7D8F3B]"
+                        animate={{ width: `${progressPercentage}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-lg bg-[#F1E8C7] p-2">
+                      <p className="font-semibold text-[#556B2F]">Processed</p>
+                      <p className="font-mono text-[#4B5320] text-lg">{nodesProcessed}/{nodes.length}</p>
+                    </div>
+                    <div className="rounded-lg bg-[#F1E8C7] p-2">
+                      <p className="font-semibold text-[#556B2F]">Updated</p>
+                      <p className="font-mono text-[#4B5320] text-lg">{distancesUpdated}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Statistics */}
             <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
               <h3 className="mb-4 flex items-center justify-between text-lg font-semibold text-[#4B5320]">
                 <span>Statistics</span>
@@ -895,21 +1277,18 @@ export default function DijkstraPage() {
                   <p className="mt-1 font-mono text-[#4B5320]">{edges.length}</p>
                 </div>
 
-                <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-2">
-                  <p className="text-xs font-semibold text-[#556B2F]">Nodes Processed</p>
-                  <p className="mt-1 font-mono text-[#4B5320]">{nodesProcessed}</p>
-                </div>
-
-                <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-2">
-                  <p className="text-xs font-semibold text-[#556B2F]">Distances Updated</p>
-                  <p className="mt-1 font-mono text-[#4B5320]">{distancesUpdated}</p>
-                </div>
-
                 {algorithmState !== "idle" && (
-                  <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-2">
-                    <p className="text-xs font-semibold text-[#556B2F]">Time Complexity</p>
-                    <p className="mt-1 font-mono text-[#7D8F3B]">O((V + E) log V)</p>
-                  </div>
+                  <>
+                    <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-2">
+                      <p className="text-xs font-semibold text-[#556B2F]">Time Complexity</p>
+                      <p className="mt-1 font-mono text-[#7D8F3B]">O((V + E) log V)</p>
+                    </div>
+
+                    <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-2">
+                      <p className="text-xs font-semibold text-[#556B2F]">Space Complexity</p>
+                      <p className="mt-1 font-mono text-[#7D8F3B]">O(V)</p>
+                    </div>
+                  </>
                 )}
 
                 {shortestPath && (
@@ -926,6 +1305,60 @@ export default function DijkstraPage() {
               </div>
             </div>
 
+            {/* Graph Legend */}
+            <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
+              <button
+                onClick={() => setShowLegend(!showLegend)}
+                className="w-full flex items-center justify-between text-lg font-semibold text-[#4B5320] hover:text-[#556B2F]"
+              >
+                <span className="flex items-center gap-2">
+                  <Layers className="h-4 w-4" /> Graph Legend
+                </span>
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${showLegend ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {showLegend && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="mt-4 space-y-2 text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#FED66A] border-2 border-[#AAB76A]"></div>
+                    <span className="text-[#556B2F]">Source/Destination Node</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#AAB76A]"></div>
+                    <span className="text-[#556B2F]">Currently Processing</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#F1E8C7] border-2"></div>
+                    <span className="text-[#556B2F]">Visited Node</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-[#4B5320]"></div>
+                    <span className="text-[#556B2F]">On Shortest Path</span>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-[#D8CCA3]">
+                    <p className="font-semibold text-[#4B5320] mb-2">Edge Styles</p>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-0.5 bg-[#FF8C42]"></div>
+                        <span>Being relaxed (orange glow)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-0.5 bg-[#4B5320] border-b border-dashed"></div>
+                        <span>Shortest path (blue dashes)</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Algorithm Steps */}
             <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
               <h3 className="mb-4 text-lg font-semibold text-[#4B5320]">Algorithm Steps</h3>
 
@@ -959,39 +1392,38 @@ export default function DijkstraPage() {
               </div>
             </div>
 
-            {algorithmState === "completed" && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-3xl border-2 border-[#7D8F3B] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
-              >
-                <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[#4B5320]">
-                  <Info className="h-4 w-4" /> How Dijkstra Works
-                </h3>
+            {/* Educational Info Cards */}
+            <div className="space-y-3">
+              {infoCards.map((card, idx) => (
+                <motion.div
+                  key={idx}
+                  className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
+                >
+                  <button
+                    onClick={() => setExpandedInfoCard(expandedInfoCard === idx ? null : idx)}
+                    className="w-full flex items-center justify-between text-lg font-semibold text-[#4B5320] hover:text-[#556B2F]"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="text-xl">{card.icon}</span>
+                      {card.title}
+                    </span>
+                    <ChevronRight
+                      className={`h-4 w-4 transition-transform ${expandedInfoCard === idx ? "rotate-90" : ""}`}
+                    />
+                  </button>
 
-                <div className="space-y-3 text-sm text-[#556B2F]">
-                  <div>
-                    <p className="font-semibold text-[#4B5320]">🎯 Greedy Strategy</p>
-                    <p className="mt-1 text-xs">Always process the unvisited node with the smallest distance. Once visited, its shortest path is permanent.</p>
-                  </div>
-
-                  <div>
-                    <p className="font-semibold text-[#4B5320]">✏️ Edge Relaxation</p>
-                    <p className="mt-1 text-xs">For each neighbor of the current node, check if going through it provides a shorter path. Update if found.</p>
-                  </div>
-
-                  <div>
-                    <p className="font-semibold text-[#4B5320]">⚡ Time Complexity</p>
-                    <p className="mt-1 text-xs font-mono">O((V + E) log V) with a binary heap priority queue</p>
-                  </div>
-
-                  <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-2 text-xs">
-                    <p className="font-semibold">Key Insight:</p>
-                    <p className="mt-1">The algorithm terminates with optimal shortest paths because it processes nodes in order of their distance, ensuring no shorter path can be found later.</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+                  {expandedInfoCard === idx && (
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="mt-3 text-sm text-[#556B2F] leading-relaxed"
+                    >
+                      {card.content}
+                    </motion.p>
+                  )}
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
