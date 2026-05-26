@@ -110,6 +110,10 @@ export default function DijkstraPage() {
   const [weightInput, setWeightInput] = useState("");
   const [showWeightModal, setShowWeightModal] = useState(false);
 
+  // Generate graph modal state
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [generateNodeCount, setGenerateNodeCount] = useState(8);
+
   // Panel state
   const [expandedSections, setExpandedSections] = useState({
     queue: true,
@@ -168,7 +172,7 @@ export default function DijkstraPage() {
   // Handlers
   const handleAddNode = () => {
     const newId = nextNodeId;
-    const position = generateNodePosition(nodes.length, nodes.length);
+    const position = generateNodePosition(nodes.length + 1, nodes.length);
     setNodes([...nodes, { id: newId, x: position.x, y: position.y }]);
     setNextNodeId(newId + 1);
   };
@@ -706,6 +710,25 @@ export default function DijkstraPage() {
                           >
                             {node.id}
                           </text>
+                          {algorithmState === "idle" && (
+                            <motion.circle
+                              cx={x + 16}
+                              cy={y - 16}
+                              r={8}
+                              fill="#FF6B6B"
+                              stroke="#fff"
+                              strokeWidth="1.5"
+                              opacity={0}
+                              whileHover={{ opacity: 1 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteNode(node.id);
+                              }}
+                              style={{ cursor: "pointer" }}
+                            >
+                              <title>Delete node</title>
+                            </motion.circle>
+                          )}
                         </motion.g>
                       );
                     })}
@@ -751,9 +774,7 @@ export default function DijkstraPage() {
                   </button>
 
                   <button
-                    onClick={() => {
-                      handleGenerateGraph({ nodes: 8, density: "medium", maxWeight: 10 });
-                    }}
+                    onClick={() => setShowGenerateModal(true)}
                     disabled={algorithmState === "running"}
                     className="w-full rounded-lg border border-[#7D8F3B] bg-white px-3 py-2 text-xs font-medium text-[#7D8F3B] hover:bg-[#F1E8C7] disabled:opacity-50"
                   >
@@ -1037,6 +1058,72 @@ export default function DijkstraPage() {
           </motion.div>
         </div>
       )}
+
+      {/* Generate Graph Modal */}
+      <AnimatePresence>
+        {showGenerateModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowGenerateModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.8 }}
+              className="bg-[#F7F1DD] rounded-2xl p-6 shadow-xl max-w-sm w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold text-[#4B5320] mb-4">Generate Random Graph</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-[#556B2F] mb-2">
+                    Number of Nodes: <span className="text-[#7D8F3B]">{generateNodeCount}</span>
+                  </label>
+                  <input
+                    type="range"
+                    min="3"
+                    max="15"
+                    value={generateNodeCount}
+                    onChange={(e) => setGenerateNodeCount(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-[#556B2F] mt-1">
+                    <span>3</span>
+                    <span>15</span>
+                  </div>
+                </div>
+
+                <div className="bg-[#F1E8C7] rounded-lg p-3 border border-[#D8CCA3]">
+                  <p className="text-xs font-semibold text-[#556B2F]">Density: Medium (50% edges)</p>
+                  <p className="text-xs text-[#7D8F3B] mt-1">Creates a connected graph with balanced connectivity</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={() => {
+                    handleGenerateGraph({ nodes: generateNodeCount, density: "medium", maxWeight: 15 });
+                    setShowGenerateModal(false);
+                  }}
+                  className="flex-1 bg-[#7D8F3B] text-white px-4 py-2 rounded-lg hover:bg-[#556B2F] font-medium"
+                >
+                  Generate
+                </button>
+                <button
+                  onClick={() => setShowGenerateModal(false)}
+                  className="flex-1 border border-[#D8CCA3] px-4 py-2 rounded-lg hover:bg-[#F1E8C7]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
