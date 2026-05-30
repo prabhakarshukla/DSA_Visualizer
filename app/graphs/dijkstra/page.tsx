@@ -528,6 +528,39 @@ export default function DijkstraPage() {
     <main className="min-h-screen bg-[#F1E8C7] text-[#4B5320]">
       <svg style={{ position: "absolute", width: 0, height: 0 }}>
         <defs>
+          <marker
+            id="arrowhead"
+            markerWidth="12"
+            markerHeight="12"
+            refX="10"
+            refY="6"
+            orient="auto"
+            markerUnits="userSpaceOnUse"
+          >
+            <path d="M 0 0 L 12 6 L 0 12 Z" fill="#7D8F3B" />
+          </marker>
+          <marker
+            id="arrowhead-active"
+            markerWidth="12"
+            markerHeight="12"
+            refX="10"
+            refY="6"
+            orient="auto"
+            markerUnits="userSpaceOnUse"
+          >
+            <path d="M 0 0 L 12 6 L 0 12 Z" fill="#FF8C42" />
+          </marker>
+          <marker
+            id="arrowhead-path"
+            markerWidth="12"
+            markerHeight="12"
+            refX="10"
+            refY="6"
+            orient="auto"
+            markerUnits="userSpaceOnUse"
+          >
+            <path d="M 0 0 L 12 6 L 0 12 Z" fill="#4B5320" />
+          </marker>
           <filter id="relaxGlow">
             <feGaussianBlur stdDeviation="2" result="coloredBlur" />
             <feMerge>
@@ -627,6 +660,7 @@ export default function DijkstraPage() {
                           strokeWidth={isOnPath ? "4" : isRelaxing ? "3" : "2"}
                           strokeDasharray={isOnPath ? "5,5" : "0"}
                           filter={isRelaxing ? "url(#relaxGlow)" : isOnPath ? "url(#pathGlow)" : "none"}
+                          markerEnd={isOnPath ? "url(#arrowhead-path)" : isRelaxing ? "url(#arrowhead-active)" : "url(#arrowhead)"}
                           animate={{
                             opacity: isOnPath ? 1 : isRelaxing ? [0.6, 1, 0.6] : 0.6,
                             strokeDashoffset: isOnPath ? [0, -10] : 0,

@@ -776,13 +776,36 @@ export default function CycleDetectionPage() {
                   <defs>
                     <marker
                       id="arrowhead"
-                      markerWidth="10"
-                      markerHeight="7"
-                      refX="9"
-                      refY="3.5"
+                      markerWidth="12"
+                      markerHeight="12"
+                      refX="10"
+                      refY="6"
                       orient="auto"
+                      markerUnits="userSpaceOnUse"
                     >
-                      <polygon points="0 0, 10 3.5, 0 7" fill="#7D8F3B" />
+                      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#7D8F3B" />
+                    </marker>
+                    <marker
+                      id="arrowhead-active"
+                      markerWidth="12"
+                      markerHeight="12"
+                      refX="10"
+                      refY="6"
+                      orient="auto"
+                      markerUnits="userSpaceOnUse"
+                    >
+                      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#556B2F" />
+                    </marker>
+                    <marker
+                      id="arrowhead-cycle"
+                      markerWidth="12"
+                      markerHeight="12"
+                      refX="10"
+                      refY="6"
+                      orient="auto"
+                      markerUnits="userSpaceOnUse"
+                    >
+                      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#4B5320" />
                     </marker>
                   </defs>
 
@@ -814,6 +837,17 @@ export default function CycleDetectionPage() {
                     const strokeColor = isCycleEdge ? "#4B5320" : isActive ? "#7D8F3B" : "#D8CCA3";
                     const strokeWidth = isCycleEdge ? "4" : isActive ? "3" : "2";
 
+                    let markerUrl: string | undefined = undefined;
+                    if (graphMode === "directed") {
+                      if (isCycleEdge) {
+                        markerUrl = "url(#arrowhead-cycle)";
+                      } else if (isActive) {
+                        markerUrl = "url(#arrowhead-active)";
+                      } else {
+                        markerUrl = "url(#arrowhead)";
+                      }
+                    }
+
                     return (
                       <motion.line
                         key={`edge-${idx}`}
@@ -824,7 +858,7 @@ export default function CycleDetectionPage() {
                         stroke={strokeColor}
                         strokeWidth={strokeWidth}
                         strokeDasharray={isCycleEdge ? "6,4" : "0"}
-                        markerEnd={graphMode === "directed" ? "url(#arrowhead)" : undefined}
+                        markerEnd={markerUrl}
                         animate={{ opacity: isActive ? [0.6, 1, 0.6] : 0.7 }}
                         transition={{ repeat: isActive ? Infinity : 0, duration: 1.4 }}
                       />
@@ -907,6 +941,23 @@ export default function CycleDetectionPage() {
                 <p className="mt-2 text-sm font-mono text-[#4B5320]">
                   {edgeFrom ?? "—"} {edgeTo !== null && `→ ${edgeTo}`}
                 </p>
+                {graphMode === "directed" && (edgeFrom !== null || edgeTo !== null) && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-3 rounded-lg border-l-4 border-[#7D8F3B] bg-[#F1E8C7] p-3 text-xs text-[#556B2F]"
+                  >
+                    <p className="font-semibold text-[#4B5320] mb-1">Edge Direction Guide</p>
+                    <p>
+                      {edgeFrom !== null && edgeTo === null
+                        ? `1️⃣ First node selected: ${edgeFrom}. Click another node to set as destination. Arrow will point FROM ${edgeFrom} TO the second node.`
+                        : edgeFrom !== null && edgeTo !== null
+                          ? `✓ Edge will go FROM node ${edgeFrom} TO node ${edgeTo}. Click "Add Edge" to create.`
+                          : "Click a node to start creating a directed edge. First click = source, second click = destination."}
+                    </p>
+                  </motion.div>
+                )}
               </div>
             </div>
           </div>
