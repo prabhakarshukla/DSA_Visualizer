@@ -776,36 +776,36 @@ export default function CycleDetectionPage() {
                   <defs>
                     <marker
                       id="arrowhead"
-                      markerWidth="12"
-                      markerHeight="12"
-                      refX="10"
-                      refY="6"
+                      markerWidth="18"
+                      markerHeight="18"
+                      refX="14"
+                      refY="9"
                       orient="auto"
-                      markerUnits="userSpaceOnUse"
+                      markerUnits="strokeWidth"
                     >
-                      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#7D8F3B" />
+                      <path d="M 0 0 L 18 9 L 0 18 Z" fill="#7D8F3B" />
                     </marker>
                     <marker
                       id="arrowhead-active"
-                      markerWidth="12"
-                      markerHeight="12"
-                      refX="10"
-                      refY="6"
+                      markerWidth="18"
+                      markerHeight="18"
+                      refX="14"
+                      refY="9"
                       orient="auto"
-                      markerUnits="userSpaceOnUse"
+                      markerUnits="strokeWidth"
                     >
-                      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#556B2F" />
+                      <path d="M 0 0 L 18 9 L 0 18 Z" fill="#556B2F" />
                     </marker>
                     <marker
                       id="arrowhead-cycle"
-                      markerWidth="12"
-                      markerHeight="12"
-                      refX="10"
-                      refY="6"
+                      markerWidth="18"
+                      markerHeight="18"
+                      refX="14"
+                      refY="9"
                       orient="auto"
-                      markerUnits="userSpaceOnUse"
+                      markerUnits="strokeWidth"
                     >
-                      <path d="M 0 0 L 12 6 L 0 12 Z" fill="#4B5320" />
+                      <path d="M 0 0 L 18 9 L 0 18 Z" fill="#4B5320" />
                     </marker>
                   </defs>
 
