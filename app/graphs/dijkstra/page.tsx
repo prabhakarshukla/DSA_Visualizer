@@ -530,36 +530,36 @@ export default function DijkstraPage() {
         <defs>
           <marker
             id="arrowhead"
-            markerWidth="18"
-            markerHeight="18"
-            refX="14"
-            refY="9"
+            markerWidth="24"
+            markerHeight="24"
+            refX="20"
+            refY="12"
             orient="auto"
-            markerUnits="strokeWidth"
+            markerUnits="userSpaceOnUse"
           >
-            <path d="M 0 0 L 18 9 L 0 18 Z" fill="#7D8F3B" />
+            <path d="M 0 0 L 24 12 L 0 24 Z" fill="#7D8F3B" />
           </marker>
           <marker
             id="arrowhead-active"
-            markerWidth="18"
-            markerHeight="18"
-            refX="14"
-            refY="9"
+            markerWidth="24"
+            markerHeight="24"
+            refX="20"
+            refY="12"
             orient="auto"
-            markerUnits="strokeWidth"
+            markerUnits="userSpaceOnUse"
           >
-            <path d="M 0 0 L 18 9 L 0 18 Z" fill="#FF8C42" />
+            <path d="M 0 0 L 24 12 L 0 24 Z" fill="#FF8C42" />
           </marker>
           <marker
             id="arrowhead-path"
-            markerWidth="18"
-            markerHeight="18"
-            refX="14"
-            refY="9"
+            markerWidth="24"
+            markerHeight="24"
+            refX="20"
+            refY="12"
             orient="auto"
-            markerUnits="strokeWidth"
+            markerUnits="userSpaceOnUse"
           >
-            <path d="M 0 0 L 18 9 L 0 18 Z" fill="#4B5320" />
+            <path d="M 0 0 L 24 12 L 0 24 Z" fill="#4B5320" />
           </marker>
           <filter id="relaxGlow">
             <feGaussianBlur stdDeviation="2" result="coloredBlur" />
