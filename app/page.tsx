@@ -1,5 +1,14 @@
-import { HeroSection } from "@/components/hero-section";
-import { Navbar } from "@/components/navbar";
+import { Navbar } from "@/components/landing/navbar"
+import { Hero } from "@/components/landing/hero"
+import { TrustSection } from "@/components/landing/trust-section"
+import { Features } from "@/components/landing/features"
+import { WhyChooseUs } from "@/components/landing/why-choose-us"
+import { Stats } from "@/components/landing/stats"
+import { HowItWorks } from "@/components/landing/how-it-works"
+import { Testimonials } from "@/components/landing/testimonials"
+import { Faq } from "@/components/landing/faq"
+import { FinalCta } from "@/components/landing/final-cta"
+import { Footer } from "@/components/landing/footer"
 import { ModuleStatus, VisualizerCard } from "@/components/visualizer-card";
 import {
   ArrowRight,
@@ -97,7 +106,7 @@ export default function Home() {
       <Navbar />
 
       <main className="pb-16">
-        <HeroSection />
+        <Hero />
 
         <section className="px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-6xl rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/80 p-5 shadow-[0_10px_30px_rgba(75,83,32,0.06)] sm:p-7">
