@@ -14,7 +14,6 @@ import {
   Upload,
   ChevronRight,
   ChevronLeft,
-  BookOpen,
   Info,
   CheckCircle,
 } from "lucide-react";
@@ -68,6 +67,97 @@ const getSpeedMultiplier = (speedLevel: SpeedLevel) => {
   }
 };
 
+const NODE_RADIUS = 24;
+const ARROW_GAP = 6;
+const ARROW_LENGTH = 14;
+const ARROW_WIDTH = 11;
+const OPPOSITE_EDGE_CURVE = 42;
+
+type Point = {
+  x: number;
+  y: number;
+};
+
+type EdgeGeometry = {
+  path: string;
+  arrowPoints: string;
+  label: Point;
+};
+
+const getQuadraticPoint = (start: Point, control: Point, end: Point, t: number): Point => {
+  const inverse = 1 - t;
+  return {
+    x: inverse * inverse * start.x + 2 * inverse * t * control.x + t * t * end.x,
+    y: inverse * inverse * start.y + 2 * inverse * t * control.y + t * t * end.y,
+  };
+};
+
+const getArrowPoints = (tip: Point, angle: number) => {
+  const direction = { x: Math.cos(angle), y: Math.sin(angle) };
+  const normal = { x: -direction.y, y: direction.x };
+  const base = {
+    x: tip.x - direction.x * ARROW_LENGTH,
+    y: tip.y - direction.y * ARROW_LENGTH,
+  };
+
+  return [
+    tip,
+    {
+      x: base.x + normal.x * (ARROW_WIDTH / 2),
+      y: base.y + normal.y * (ARROW_WIDTH / 2),
+    },
+    {
+      x: base.x - normal.x * (ARROW_WIDTH / 2),
+      y: base.y - normal.y * (ARROW_WIDTH / 2),
+    },
+  ]
+    .map((point) => `${point.x},${point.y}`)
+    .join(" ");
+};
+
+const getEdgeGeometry = (from: Point, to: Point, isCurved: boolean): EdgeGeometry | null => {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const distance = Math.hypot(dx, dy);
+
+  if (distance <= NODE_RADIUS * 2) return null;
+
+  const unit = { x: dx / distance, y: dy / distance };
+  const start = {
+    x: from.x + unit.x * NODE_RADIUS,
+    y: from.y + unit.y * NODE_RADIUS,
+  };
+  const end = {
+    x: to.x - unit.x * (NODE_RADIUS + ARROW_GAP),
+    y: to.y - unit.y * (NODE_RADIUS + ARROW_GAP),
+  };
+
+  if (!isCurved) {
+    const angle = Math.atan2(end.y - start.y, end.x - start.x);
+    return {
+      path: `M ${start.x} ${start.y} L ${end.x} ${end.y}`,
+      arrowPoints: getArrowPoints(end, angle),
+      label: {
+        x: (start.x + end.x) / 2,
+        y: (start.y + end.y) / 2,
+      },
+    };
+  }
+
+  const control = {
+    x: (start.x + end.x) / 2 + (-unit.y * OPPOSITE_EDGE_CURVE),
+    y: (start.y + end.y) / 2 + (unit.x * OPPOSITE_EDGE_CURVE),
+  };
+  const label = getQuadraticPoint(start, control, end, 0.5);
+  const angle = Math.atan2(end.y - control.y, end.x - control.x);
+
+  return {
+    path: `M ${start.x} ${start.y} Q ${control.x} ${control.y} ${end.x} ${end.y}`,
+    arrowPoints: getArrowPoints(end, angle),
+    label,
+  };
+};
+
 export default function CycleDetectionPage() {
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -100,11 +190,6 @@ export default function CycleDetectionPage() {
 
   // UI state
   const [showEducation, setShowEducation] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({
-    progress: true,
-    history: true,
-    summary: true,
-  });
 
   const pauseRef = useRef(false);
   const cancelRef = useRef(false);
@@ -747,8 +832,8 @@ export default function CycleDetectionPage() {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-          <div className="lg:col-span-3 space-y-6">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="space-y-6">
             <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold text-[#4B5320]">Graph Visualization</h2>
@@ -759,6 +844,229 @@ export default function CycleDetectionPage() {
                   <span className="rounded-full border border-[#AAB76A] bg-[#F1E8C7] px-3 py-1 font-semibold">
                     {nodes.length} nodes / {edges.length} edges
                   </span>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4 xl:grid-cols-5">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Graph Mode</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(["directed", "undirected"] as GraphMode[]).map((mode) => (
+                      <motion.button
+                        key={mode}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => handleGraphModeChange(mode)}
+                        disabled={isLocked}
+                        className={`rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
+                          graphMode === mode
+                            ? "bg-[#7D8F3B] text-white"
+                            : "border border-[#D8CCA3] bg-white text-[#556B2F] hover:bg-[#F1E8C7]"
+                        } disabled:opacity-60`}
+                      >
+                        {mode}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2 xl:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Edit Graph</p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-2">
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleAddNode}
+                      disabled={isLocked}
+                      className="rounded-xl bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#7D8F3B] disabled:opacity-60"
+                    >
+                      <Plus className="mr-1 inline h-4 w-4" /> Add Node
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleConnectNodes}
+                      disabled={isLocked || edgeFrom === null || edgeTo === null}
+                      className="rounded-xl bg-[#7D8F3B] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#556B2F] disabled:opacity-60"
+                    >
+                      <Zap className="mr-1 inline h-4 w-4" /> Add Edge
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleRemoveEdge}
+                      disabled={isLocked || edgeFrom === null || edgeTo === null}
+                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
+                    >
+                      <Trash2 className="mr-1 inline h-4 w-4" /> Remove
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleDeleteSelectedNode}
+                      disabled={isLocked || edgeFrom === null || edgeTo !== null}
+                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
+                    >
+                      <Trash2 className="mr-1 inline h-4 w-4" /> Delete
+                    </motion.button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Run</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={runCycleDetection}
+                      disabled={isLocked || nodes.length === 0}
+                      className="rounded-xl bg-[#7D8F3B] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#556B2F] disabled:opacity-60"
+                    >
+                      <Play className="mr-1 inline h-4 w-4" /> Start
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handlePause}
+                      disabled={!isRunning}
+                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
+                    >
+                      <Pause className="mr-1 inline h-4 w-4" /> Pause
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleResume}
+                      disabled={!isPaused}
+                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
+                    >
+                      <Play className="mr-1 inline h-4 w-4" /> Resume
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={resetAlgorithmState}
+                      disabled={isLocked}
+                      className="rounded-xl border border-[#7D8F3B] bg-white px-3 py-2 text-xs font-semibold text-[#7D8F3B] transition hover:bg-[#F1E8C7] disabled:opacity-60"
+                    >
+                      <RotateCcw className="mr-1 inline h-4 w-4" /> Reset
+                    </motion.button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Speed</p>
+                  <div className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-[#556B2F]">Slow</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="2"
+                        step="1"
+                        value={speed === "slow" ? 0 : speed === "medium" ? 1 : 2}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setSpeed(val === 0 ? "slow" : val === 1 ? "medium" : "fast");
+                        }}
+                        disabled={isLocked}
+                        className="min-w-0 flex-1 cursor-pointer accent-[#7D8F3B] disabled:opacity-60"
+                      />
+                      <span className="text-xs font-medium text-[#556B2F]">Fast</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 xl:col-span-5">
+                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[repeat(8,minmax(0,1fr))]">
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={generateCyclicGraph}
+                      disabled={isLocked}
+                      className="rounded-xl border border-red-300 bg-red-500/20 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-500/30 disabled:opacity-60"
+                    >
+                      Cyclic
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={generateAcyclicGraph}
+                      disabled={isLocked}
+                      className="rounded-xl border border-green-300 bg-green-500/20 px-3 py-2 text-xs font-semibold text-green-700 transition hover:bg-green-500/30 disabled:opacity-60"
+                    >
+                      Acyclic
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={generateDAG}
+                      disabled={isLocked}
+                      className="rounded-xl border border-blue-300 bg-blue-500/20 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-500/30 disabled:opacity-60"
+                    >
+                      DAG
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={generateDenseGraph}
+                      disabled={isLocked}
+                      className="rounded-xl border border-purple-300 bg-purple-500/20 px-3 py-2 text-xs font-semibold text-purple-700 transition hover:bg-purple-500/30 disabled:opacity-60"
+                    >
+                      Dense
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleGenerateRandomGraph}
+                      disabled={isLocked}
+                      className="rounded-xl bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#7D8F3B] disabled:opacity-60"
+                    >
+                      <Shuffle className="mr-1 inline h-4 w-4" /> Random
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleClearGraph}
+                      disabled={isLocked}
+                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#7D8F3B] transition hover:bg-[#F1E8C7] disabled:opacity-60"
+                    >
+                      <RotateCcw className="mr-1 inline h-4 w-4" /> Clear
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={exportGraph}
+                      className="rounded-xl bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#7D8F3B]"
+                    >
+                      <Download className="mr-1 inline h-4 w-4" /> Export
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={importGraph}
+                      className="rounded-xl bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#7D8F3B]"
+                    >
+                      <Upload className="mr-1 inline h-4 w-4" /> Import
+                    </motion.button>
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-[auto_1fr]">
+                    <div className="grid grid-cols-3 gap-2 sm:w-52">
+                      <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handlePreviousStep}
+                        disabled={algorithmState !== "completed" || currentStepIndex === 0}
+                        className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </motion.button>
+                      <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={toggleAutoplay}
+                        disabled={algorithmState !== "completed"}
+                        className={`rounded-xl px-3 py-2 text-xs font-semibold text-white transition disabled:opacity-60 ${
+                          isAutoplay ? "bg-[#FF6B6B]" : "bg-[#7D8F3B] hover:bg-[#556B2F]"
+                        }`}
+                      >
+                        {isAutoplay ? "Stop" : "Play"}
+                      </motion.button>
+                      <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleNextStep}
+                        disabled={algorithmState !== "completed" || currentStepIndex >= executionSteps.length - 1}
+                        className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </motion.button>
+                    </div>
+                    <p className="self-center text-xs text-[#556B2F]">
+                      {algorithmState === "completed" ? `Step ${currentStepIndex + 1} of ${executionSteps.length}` : "Step controls appear after detection completes."}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -773,51 +1081,23 @@ export default function CycleDetectionPage() {
                   onMouseLeave={handleSvgMouseUp}
                   onClick={handleSvgClick}
                 >
-                  <defs>
-                    <marker
-                      id="arrowhead"
-                      markerWidth="50"
-                      markerHeight="50"
-                      refX="10"
-                      refY="25"
-                      orient="auto"
-                      markerUnits="userSpaceOnUse"
-                    >
-                      <polygon points="0 0, 50 25, 0 50" fill="#7D8F3B" />
-                    </marker>
-                    <marker
-                      id="arrowhead-active"
-                      markerWidth="50"
-                      markerHeight="50"
-                      refX="10"
-                      refY="25"
-                      orient="auto"
-                      markerUnits="userSpaceOnUse"
-                    >
-                      <polygon points="0 0, 50 25, 0 50" fill="#556B2F" />
-                    </marker>
-                    <marker
-                      id="arrowhead-cycle"
-                      markerWidth="50"
-                      markerHeight="50"
-                      refX="10"
-                      refY="25"
-                      orient="auto"
-                      markerUnits="userSpaceOnUse"
-                    >
-                      <polygon points="0 0, 50 25, 0 50" fill="#4B5320" />
-                    </marker>
-                  </defs>
-
                   {edges.map((edge, idx) => {
                     const fromNode = nodes.find((n) => n.id === edge.from);
                     const toNode = nodes.find((n) => n.id === edge.to);
                     if (!fromNode || !toNode) return null;
 
-                    const x1 = (fromNode.x / 100) * svgWidth;
-                    const y1 = (fromNode.y / 100) * svgHeight;
-                    const x2 = (toNode.x / 100) * svgWidth;
-                    const y2 = (toNode.y / 100) * svgHeight;
+                    const fromPoint = {
+                      x: (fromNode.x / 100) * svgWidth,
+                      y: (fromNode.y / 100) * svgHeight,
+                    };
+                    const toPoint = {
+                      x: (toNode.x / 100) * svgWidth,
+                      y: (toNode.y / 100) * svgHeight,
+                    };
+                    const hasOppositeEdge =
+                      graphMode === "directed" && edges.some((otherEdge) => otherEdge.from === edge.to && otherEdge.to === edge.from);
+                    const geometry = getEdgeGeometry(fromPoint, toPoint, hasOppositeEdge);
+                    if (!geometry) return null;
 
                     const isActive =
                       activeEdge &&
@@ -837,31 +1117,41 @@ export default function CycleDetectionPage() {
                     const strokeColor = isCycleEdge ? "#4B5320" : isActive ? "#7D8F3B" : "#D8CCA3";
                     const strokeWidth = isCycleEdge ? "4" : isActive ? "3" : "2";
 
-                    let markerUrl: string | undefined = undefined;
+                    let arrowFill: string | undefined = undefined;
                     if (graphMode === "directed") {
                       if (isCycleEdge) {
-                        markerUrl = "url(#arrowhead-cycle)";
+                        arrowFill = "#4B5320";
                       } else if (isActive) {
-                        markerUrl = "url(#arrowhead-active)";
+                        arrowFill = "#556B2F";
                       } else {
-                        markerUrl = "url(#arrowhead)";
+                        arrowFill = "#7D8F3B";
                       }
                     }
 
                     return (
-                      <motion.line
-                        key={`edge-${idx}`}
-                        x1={x1}
-                        y1={y1}
-                        x2={x2}
-                        y2={y2}
-                        stroke={strokeColor}
-                        strokeWidth={strokeWidth}
-                        strokeDasharray={isCycleEdge ? "6,4" : "0"}
-                        markerEnd={markerUrl}
-                        animate={{ opacity: isActive ? [0.6, 1, 0.6] : 0.7 }}
-                        transition={{ repeat: isActive ? Infinity : 0, duration: 1.4 }}
-                      />
+                      <g key={`edge-${idx}`}>
+                        <motion.path
+                          d={geometry.path}
+                          fill="none"
+                          stroke={strokeColor}
+                          strokeWidth={strokeWidth}
+                          strokeDasharray={isCycleEdge ? "6,4" : "0"}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          animate={{ opacity: isActive ? [0.6, 1, 0.6] : 0.7 }}
+                          transition={{ repeat: isActive ? Infinity : 0, duration: 1.4 }}
+                        />
+                        {arrowFill && (
+                          <motion.polygon
+                            points={geometry.arrowPoints}
+                            fill={arrowFill}
+                            stroke={arrowFill}
+                            strokeLinejoin="round"
+                            animate={{ opacity: isActive ? [0.75, 1, 0.75] : 0.85 }}
+                            transition={{ repeat: isActive ? Infinity : 0, duration: 1.4 }}
+                          />
+                        )}
+                      </g>
                     );
                   })}
 
@@ -962,244 +1252,7 @@ export default function CycleDetectionPage() {
             </div>
           </div>
 
-          <div className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
-            >
-              <h3 className="text-lg font-semibold text-[#4B5320]">Live Algorithm Panel</h3>
-              <p className="mt-2 text-sm text-[#556B2F]">
-                Toggle graph mode, edit edges, and control DFS cycle detection in real-time.
-              </p>
-
-              <div className="mt-4 space-y-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Graph Mode</p>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    {(["directed", "undirected"] as GraphMode[]).map((mode) => (
-                      <motion.button
-                        key={mode}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => handleGraphModeChange(mode)}
-                        disabled={isLocked}
-                        className={`rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-wide transition ${
-                          graphMode === mode
-                            ? "bg-[#7D8F3B] text-white"
-                            : "border border-[#D8CCA3] bg-white text-[#556B2F] hover:bg-[#F1E8C7]"
-                        } disabled:opacity-60`}
-                      >
-                        {mode}
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Graph Editing</p>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleAddNode}
-                      disabled={isLocked}
-                      className="rounded-xl bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#7D8F3B] disabled:opacity-60"
-                    >
-                      <Plus className="mr-1 inline h-4 w-4" /> Add Node
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleConnectNodes}
-                      disabled={isLocked || edgeFrom === null || edgeTo === null}
-                      className="rounded-xl bg-[#7D8F3B] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#556B2F] disabled:opacity-60"
-                    >
-                      <Zap className="mr-1 inline h-4 w-4" /> Add Edge
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleRemoveEdge}
-                      disabled={isLocked || edgeFrom === null || edgeTo === null}
-                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
-                    >
-                      <Trash2 className="mr-1 inline h-4 w-4" /> Remove Edge
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleDeleteSelectedNode}
-                      disabled={isLocked || edgeFrom === null || edgeTo !== null}
-                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
-                    >
-                      <Trash2 className="mr-1 inline h-4 w-4" /> Delete Node
-                    </motion.button>
-                  </div>
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleClearGraph}
-                    disabled={isLocked}
-                    className="mt-2 w-full rounded-xl border border-[#D8CCA3] bg-[#F1E8C7] px-3 py-2 text-xs font-semibold text-[#7D8F3B] transition hover:bg-[#E9DDB6] disabled:opacity-60"
-                  >
-                    <RotateCcw className="mr-1 inline h-4 w-4" /> Clear Graph
-                  </motion.button>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Graph Presets</p>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={generateCyclicGraph}
-                      disabled={isLocked}
-                      className="rounded-xl bg-red-500/20 border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-500/30 disabled:opacity-60"
-                    >
-                      Cyclic
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={generateAcyclicGraph}
-                      disabled={isLocked}
-                      className="rounded-xl bg-green-500/20 border border-green-300 px-3 py-2 text-xs font-semibold text-green-700 transition hover:bg-green-500/30 disabled:opacity-60"
-                    >
-                      Acyclic
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={generateDAG}
-                      disabled={isLocked}
-                      className="rounded-xl bg-blue-500/20 border border-blue-300 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-500/30 disabled:opacity-60"
-                    >
-                      DAG
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={generateDenseGraph}
-                      disabled={isLocked}
-                      className="rounded-xl bg-purple-500/20 border border-purple-300 px-3 py-2 text-xs font-semibold text-purple-700 transition hover:bg-purple-500/30 disabled:opacity-60"
-                    >
-                      Dense
-                    </motion.button>
-                  </div>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={exportGraph}
-                      className="rounded-xl bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#7D8F3B]"
-                    >
-                      <Download className="mr-1 inline h-4 w-4" /> Export
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={importGraph}
-                      className="rounded-xl bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#7D8F3B]"
-                    >
-                      <Upload className="mr-1 inline h-4 w-4" /> Import
-                    </motion.button>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Step-by-Step Mode</p>
-                  <div className="mt-2 grid grid-cols-3 gap-2">
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handlePreviousStep}
-                      disabled={algorithmState !== "completed" || currentStepIndex === 0}
-                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={toggleAutoplay}
-                      disabled={algorithmState !== "completed"}
-                      className={`rounded-xl px-3 py-2 text-xs font-semibold text-white transition disabled:opacity-60 ${
-                        isAutoplay ? "bg-[#FF6B6B]" : "bg-[#7D8F3B] hover:bg-[#556B2F]"
-                      }`}
-                    >
-                      {isAutoplay ? "Stop" : "Play"}
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleNextStep}
-                      disabled={algorithmState !== "completed" || currentStepIndex >= executionSteps.length - 1}
-                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </motion.button>
-                  </div>
-                  {algorithmState === "completed" && (
-                    <p className="mt-2 text-xs text-[#556B2F]">
-                      Step {currentStepIndex + 1} of {executionSteps.length}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Detection Controls</p>
-                  <div className="mt-2 grid grid-cols-2 gap-2">
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={runCycleDetection}
-                      disabled={isLocked || nodes.length === 0}
-                      className="rounded-xl bg-[#7D8F3B] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#556B2F] disabled:opacity-60"
-                    >
-                      <Play className="mr-1 inline h-4 w-4" /> Start Detection
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handlePause}
-                      disabled={!isRunning}
-                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
-                    >
-                      <Pause className="mr-1 inline h-4 w-4" /> Pause
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleResume}
-                      disabled={!isPaused}
-                      className="rounded-xl border border-[#D8CCA3] bg-white px-3 py-2 text-xs font-semibold text-[#556B2F] transition hover:bg-[#F1E8C7] disabled:opacity-60"
-                    >
-                      <Play className="mr-1 inline h-4 w-4" /> Resume
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={resetAlgorithmState}
-                      disabled={isLocked}
-                      className="rounded-xl border border-[#7D8F3B] bg-white px-3 py-2 text-xs font-semibold text-[#7D8F3B] transition hover:bg-[#F1E8C7] disabled:opacity-60"
-                    >
-                      <RotateCcw className="mr-1 inline h-4 w-4" /> Reset
-                    </motion.button>
-                  </div>
-                  <motion.button
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleGenerateRandomGraph}
-                    disabled={isLocked}
-                    className="mt-2 w-full rounded-xl bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#7D8F3B] disabled:opacity-60"
-                  >
-                    <Shuffle className="mr-1 inline h-4 w-4" /> Generate Random Graph
-                  </motion.button>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Traversal Speed</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-xs font-medium text-[#556B2F]">Slow</span>
-                    <input
-                      type="range"
-                      min="0"
-                      max="2"
-                      step="1"
-                      value={speed === "slow" ? 0 : speed === "medium" ? 1 : 2}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        setSpeed(val === 0 ? "slow" : val === 1 ? "medium" : "fast");
-                      }}
-                      disabled={isLocked}
-                      className="flex-1 cursor-pointer accent-[#7D8F3B] disabled:opacity-60"
-                    />
-                    <span className="text-xs font-medium text-[#556B2F]">Fast</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+          <div className={`space-y-4 ${isLocked ? "lg:sticky lg:top-4" : ""}`}>
 
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -1278,7 +1331,7 @@ export default function CycleDetectionPage() {
               animate={{ opacity: 1, y: 0 }}
               className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
             >
-              <h3 className="text-lg font-semibold text-[#4B5320]">Live Steps</h3>
+              <h3 className="text-lg font-semibold text-[#4B5320]">Live Algorithm Steps</h3>
               <ul className="mt-3 space-y-2 text-sm text-[#4B5320]">
                 {steps.slice(-6).map((step, idx) => (
                   <li key={`${step}-${idx}`} className="flex items-start gap-2">
@@ -1288,11 +1341,14 @@ export default function CycleDetectionPage() {
                 ))}
               </ul>
             </motion.div>
+          </div>
+        </div>
 
+        <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
+              className="order-2 flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-[#4B5320]">Cycle Summary</h3>
@@ -1353,10 +1409,10 @@ export default function CycleDetectionPage() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
+              className="order-4 flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-[#4B5320]">Educational Info</h3>
+                <h3 className="text-lg font-semibold text-[#4B5320]">Educational Information</h3>
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowEducation(!showEducation)}
@@ -1365,6 +1421,12 @@ export default function CycleDetectionPage() {
                   <Info className="h-5 w-5 text-[#7D8F3B]" />
                 </motion.button>
               </div>
+
+              {!showEducation && (
+                <p className="text-sm text-[#556B2F]">
+                  DFS detects cycles by tracking visited nodes and the current recursion path. Open this card for the detailed model.
+                </p>
+              )}
 
               {showEducation && (
                 <motion.div
@@ -1399,7 +1461,7 @@ export default function CycleDetectionPage() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
+              className="order-1 flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
             >
               <h3 className="text-lg font-semibold text-[#4B5320]">Algorithm Progress</h3>
               <div className="mt-4 space-y-3">
@@ -1446,7 +1508,7 @@ export default function CycleDetectionPage() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
+              className="order-3 flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
             >
               <h3 className="text-lg font-semibold text-[#4B5320]">Time Complexity</h3>
               <div className="mt-4 space-y-3 text-sm text-[#556B2F]">
@@ -1465,7 +1527,7 @@ export default function CycleDetectionPage() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
+              className="order-5 flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]"
             >
               <h3 className="text-lg font-semibold text-[#4B5320]">Graph Legend</h3>
               <div className="mt-4 grid gap-3 text-sm text-[#556B2F]">
@@ -1496,7 +1558,6 @@ export default function CycleDetectionPage() {
               </div>
             </motion.div>
           </div>
-        </div>
       </div>
     </main>
   );
