@@ -24,6 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { GRAPH_COLORS, NODE_RADIUS, EDGE_STROKE_WIDTH, EDGE_STROKE_WIDTH_ACTIVE, EDGE_STROKE_WIDTH_SELECTED, EDGE_STROKE_WIDTH_MST, EDGE_STROKE_WIDTH_CYCLE } from "@/components/graph-engine";
 
 type GraphNode = {
   id: number;
@@ -671,23 +672,23 @@ export default function KruskalVisualizer() {
                         ((displayState.currentEdge.from === edge.from && displayState.currentEdge.to === edge.to) ||
                           (displayState.currentEdge.from === edge.to && displayState.currentEdge.to === edge.from));
 
-                      let strokeColor = "#D8CCA3";
-                      let strokeWidthVal = 2;
+                      let strokeColor = GRAPH_COLORS.edge.normal;
+                      let strokeWidthVal = EDGE_STROKE_WIDTH;
                       let filterUrl = "none";
                       let opacity = 0.6;
 
                       if (isInMST) {
-                        strokeColor = "#4B5320";
-                        strokeWidthVal = 4;
+                        strokeColor = GRAPH_COLORS.edge.mst;
+                        strokeWidthVal = EDGE_STROKE_WIDTH_MST;
                         opacity = 0.9;
                         filterUrl = "url(#mstGlow)";
                       } else if (isRejected) {
-                        strokeColor = "#FF6B6B";
-                        strokeWidthVal = 2;
+                        strokeColor = GRAPH_COLORS.edge.cycle;
+                        strokeWidthVal = EDGE_STROKE_WIDTH_CYCLE;
                         opacity = 0.4;
                       } else if (isCurrent) {
-                        strokeColor = "#FED66A";
-                        strokeWidthVal = 3;
+                        strokeColor = GRAPH_COLORS.edge.selected;
+                        strokeWidthVal = EDGE_STROKE_WIDTH_ACTIVE;
                         opacity = 1;
                         filterUrl = "url(#currentEdgeGlow)";
                       }
@@ -731,15 +732,15 @@ export default function KruskalVisualizer() {
 
                       const isSelectedForDeletion = selectedNodeForDeletion === node.id;
 
-                      let fillColor = "#F7F1DD";
-                      let strokeColor = "#D8CCA3";
+                      let fillColor = GRAPH_COLORS.node.default.fill;
+                      let strokeColor = GRAPH_COLORS.node.default.stroke;
 
                       if (isSelectedForDeletion) {
-                        fillColor = "#FF6B6B";
-                        strokeColor = "#FF3333";
+                        fillColor = GRAPH_COLORS.node.current.fill;
+                        strokeColor = GRAPH_COLORS.node.current.stroke;
                       }
 
-                      const strokeWidthVal = isSelectedForDeletion ? "3" : "1.5";
+                      const strokeWidthVal = isSelectedForDeletion ? EDGE_STROKE_WIDTH_ACTIVE : EDGE_STROKE_WIDTH;
 
                       return (
                         <motion.g
@@ -754,12 +755,12 @@ export default function KruskalVisualizer() {
                           <motion.circle
                             cx={x}
                             cy={y}
-                            r={nodeRadius}
+                            r={NODE_RADIUS}
                             fill={fillColor}
                             stroke={strokeColor}
                             strokeWidth={strokeWidthVal}
                             animate={{
-                              r: isSelectedForDeletion ? nodeSelectedRadius : nodeRadius,
+                              r: isSelectedForDeletion ? NODE_RADIUS + 4 : NODE_RADIUS,
                             }}
                             transition={{ duration: 0.3 }}
                           />

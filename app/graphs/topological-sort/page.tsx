@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { BookOpen, CheckCircle, ChevronLeft, ChevronRight, Download, Info, Layers, Pause, Play, Plus, RotateCcw, Shuffle, Sparkles, Trash2, Zap } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { GRAPH_COLORS, NODE_RADIUS, EDGE_STROKE_WIDTH, EDGE_STROKE_WIDTH_ACTIVE, EDGE_STROKE_WIDTH_SELECTED } from "@/components/graph-engine";
 
 type GraphNode = {
   id: number;
@@ -47,7 +48,7 @@ type EdgeGeometry = {
   label: Point;
 };
 
-const NODE_RADIUS = 24;
+const NODE_RADIUS_LOCAL = NODE_RADIUS;
 const ARROW_GAP = 6;
 const ARROW_LENGTH = 14;
 const ARROW_WIDTH = 11;
@@ -103,16 +104,16 @@ const getEdgeGeometry = (from: Point, to: Point): EdgeGeometry | null => {
   const dy = to.y - from.y;
   const distance = Math.hypot(dx, dy);
 
-  if (distance <= NODE_RADIUS * 2) return null;
+  if (distance <= NODE_RADIUS_LOCAL * 2) return null;
 
   const unit = { x: dx / distance, y: dy / distance };
   const start = {
-    x: from.x + unit.x * NODE_RADIUS,
-    y: from.y + unit.y * NODE_RADIUS,
+    x: from.x + unit.x * NODE_RADIUS_LOCAL,
+    y: from.y + unit.y * NODE_RADIUS_LOCAL,
   };
   const end = {
-    x: to.x - unit.x * (NODE_RADIUS + ARROW_GAP),
-    y: to.y - unit.y * (NODE_RADIUS + ARROW_GAP),
+    x: to.x - unit.x * (NODE_RADIUS_LOCAL + ARROW_GAP),
+    y: to.y - unit.y * (NODE_RADIUS_LOCAL + ARROW_GAP),
   };
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
 
@@ -902,7 +903,7 @@ export default function TopologicalSortPage() {
                     if (!geometry) return null;
                     const isActiveEdge = activeEdge?.from === edge.from && activeEdge.to === edge.to;
                     const isProcessedEdge = processedNodes.includes(edge.from) && processedNodes.includes(edge.to);
-                    const strokeColor = isActiveEdge ? "#556B2F" : isProcessedEdge ? "#7D8F3B" : "#D8CCA3";
+                    const strokeColor = isActiveEdge ? GRAPH_COLORS.edge.active : isProcessedEdge ? GRAPH_COLORS.edge.shortestPath : GRAPH_COLORS.edge.normal;
 
                     return (
                       <g key={`edge-${index}`}>
@@ -910,15 +911,15 @@ export default function TopologicalSortPage() {
                           d={geometry.path}
                           fill="none"
                           stroke={strokeColor}
-                          strokeWidth={isActiveEdge ? "4" : isProcessedEdge ? "3" : "2"}
+                          strokeWidth={isActiveEdge ? EDGE_STROKE_WIDTH_ACTIVE : isProcessedEdge ? EDGE_STROKE_WIDTH_SELECTED : EDGE_STROKE_WIDTH}
                           strokeLinecap="round"
                           animate={{ opacity: isActiveEdge ? [0.55, 1, 0.55] : 0.78 }}
                           transition={{ repeat: isActiveEdge ? Infinity : 0, duration: 1.2 }}
                         />
                         <motion.polygon
                           points={geometry.arrowPoints}
-                          fill={isActiveEdge ? "#556B2F" : "#7D8F3B"}
-                          stroke={isActiveEdge ? "#556B2F" : "#7D8F3B"}
+                          fill={isActiveEdge ? GRAPH_COLORS.edge.active : GRAPH_COLORS.edge.shortestPath}
+                          stroke={isActiveEdge ? GRAPH_COLORS.edge.active : GRAPH_COLORS.edge.shortestPath}
                           strokeLinejoin="round"
                           animate={{ opacity: isActiveEdge ? [0.75, 1, 0.75] : 0.9 }}
                           transition={{ repeat: isActiveEdge ? Infinity : 0, duration: 1.2 }}
@@ -939,23 +940,23 @@ export default function TopologicalSortPage() {
                       const isRemoving = removingNode === node.id;
                       const indegree = displayedIndegrees[node.id] ?? 0;
 
-                      let fillColor = "#F7F1DD";
-                      let strokeColor = "#D8CCA3";
+                      let fillColor = GRAPH_COLORS.node.default.fill;
+                      let strokeColor = GRAPH_COLORS.node.default.stroke;
                       if (isCurrent || isRemoving) {
-                        fillColor = "#AAB76A";
-                        strokeColor = "#556B2F";
+                        fillColor = GRAPH_COLORS.node.current.fill;
+                        strokeColor = GRAPH_COLORS.node.current.stroke;
                       } else if (isUpdating) {
-                        fillColor = "#FED66A";
-                        strokeColor = "#AAB76A";
+                        fillColor = GRAPH_COLORS.node.visited.fill;
+                        strokeColor = GRAPH_COLORS.node.visited.stroke;
                       } else if (isProcessed) {
-                        fillColor = "#7D8F3B";
-                        strokeColor = "#4B5320";
+                        fillColor = GRAPH_COLORS.node.completed.fill;
+                        strokeColor = GRAPH_COLORS.node.completed.stroke;
                       } else if (isQueued || zeroIndegreeNodes.includes(node.id)) {
-                        fillColor = "#DCE6B0";
-                        strokeColor = "#7D8F3B";
+                        fillColor = GRAPH_COLORS.node.visited.fill;
+                        strokeColor = GRAPH_COLORS.node.visited.stroke;
                       } else if (isSelected) {
-                        fillColor = "#FED66A";
-                        strokeColor = "#AAB76A";
+                        fillColor = GRAPH_COLORS.node.visited.fill;
+                        strokeColor = GRAPH_COLORS.node.visited.stroke;
                       }
 
                       return (
@@ -969,11 +970,11 @@ export default function TopologicalSortPage() {
                           <motion.circle
                             cx={x}
                             cy={y}
-                            r={24}
+                            r={NODE_RADIUS}
                             fill={fillColor}
                             stroke={strokeColor}
-                            strokeWidth={isSelected || isCurrent || isUpdating ? "4" : "3"}
-                            animate={{ r: isCurrent || isUpdating ? 28 : isSelected || isProcessed ? 26 : 24 }}
+                            strokeWidth={isSelected || isCurrent || isUpdating ? EDGE_STROKE_WIDTH_ACTIVE : EDGE_STROKE_WIDTH}
+                            animate={{ r: isCurrent || isUpdating ? NODE_RADIUS + 4 : isSelected || isProcessed ? NODE_RADIUS + 2 : NODE_RADIUS }}
                             transition={{ duration: 0.3 }}
                           />
                           <text x={x} y={y - 2} textAnchor="middle" dominantBaseline="middle" className="pointer-events-none text-sm font-bold" fill={isProcessed ? "#F7F1DD" : "#4B5320"}>

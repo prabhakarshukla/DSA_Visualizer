@@ -18,6 +18,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { GRAPH_COLORS, NODE_RADIUS, EDGE_STROKE_WIDTH, EDGE_STROKE_WIDTH_ACTIVE, EDGE_STROKE_WIDTH_SELECTED, EDGE_STROKE_WIDTH_CYCLE } from "@/components/graph-engine";
 
 type GraphNode = {
   id: number;
@@ -67,7 +68,7 @@ const getSpeedMultiplier = (speedLevel: SpeedLevel) => {
   }
 };
 
-const NODE_RADIUS = 24;
+const NODE_RADIUS_LOCAL = NODE_RADIUS;
 const ARROW_GAP = 6;
 const ARROW_LENGTH = 14;
 const ARROW_WIDTH = 11;
@@ -120,16 +121,16 @@ const getEdgeGeometry = (from: Point, to: Point, isCurved: boolean): EdgeGeometr
   const dy = to.y - from.y;
   const distance = Math.hypot(dx, dy);
 
-  if (distance <= NODE_RADIUS * 2) return null;
+  if (distance <= NODE_RADIUS_LOCAL * 2) return null;
 
   const unit = { x: dx / distance, y: dy / distance };
   const start = {
-    x: from.x + unit.x * NODE_RADIUS,
-    y: from.y + unit.y * NODE_RADIUS,
+    x: from.x + unit.x * NODE_RADIUS_LOCAL,
+    y: from.y + unit.y * NODE_RADIUS_LOCAL,
   };
   const end = {
-    x: to.x - unit.x * (NODE_RADIUS + ARROW_GAP),
-    y: to.y - unit.y * (NODE_RADIUS + ARROW_GAP),
+    x: to.x - unit.x * (NODE_RADIUS_LOCAL + ARROW_GAP),
+    y: to.y - unit.y * (NODE_RADIUS_LOCAL + ARROW_GAP),
   };
 
   if (!isCurved) {
@@ -1114,8 +1115,8 @@ export default function CycleDetectionPage() {
                       );
                     });
 
-                    const strokeColor = isCycleEdge ? "#4B5320" : isActive ? "#7D8F3B" : "#D8CCA3";
-                    const strokeWidth = isCycleEdge ? "4" : isActive ? "3" : "2";
+                    const strokeColor = isCycleEdge ? GRAPH_COLORS.edge.cycle : isActive ? GRAPH_COLORS.edge.active : GRAPH_COLORS.edge.normal;
+                    const strokeWidth = isCycleEdge ? EDGE_STROKE_WIDTH_CYCLE : isActive ? EDGE_STROKE_WIDTH_ACTIVE : EDGE_STROKE_WIDTH;
 
                     let arrowFill: string | undefined = undefined;
                     if (graphMode === "directed") {
@@ -1164,21 +1165,21 @@ export default function CycleDetectionPage() {
                       const isSelected = edgeFrom === node.id || edgeTo === node.id;
                       const isCycleNode = cycleNodes.includes(node.id);
 
-                      let fillColor = "#F7F1DD";
-                      let strokeColor = "#D8CCA3";
+                      let fillColor = GRAPH_COLORS.node.default.fill;
+                      let strokeColor = GRAPH_COLORS.node.default.stroke;
 
                       if (isCycleNode) {
-                        fillColor = "#7D8F3B";
-                        strokeColor = "#4B5320";
+                        fillColor = GRAPH_COLORS.node.completed.fill;
+                        strokeColor = GRAPH_COLORS.node.completed.stroke;
                       } else if (isActive) {
-                        fillColor = "#AAB76A";
-                        strokeColor = "#556B2F";
+                        fillColor = GRAPH_COLORS.node.current.fill;
+                        strokeColor = GRAPH_COLORS.node.current.stroke;
                       } else if (isSelected) {
-                        fillColor = "#FED66A";
-                        strokeColor = "#AAB76A";
+                        fillColor = GRAPH_COLORS.node.visited.fill;
+                        strokeColor = GRAPH_COLORS.node.visited.stroke;
                       } else if (isVisited) {
-                        fillColor = "#F1E8C7";
-                        strokeColor = "#7D8F3B";
+                        fillColor = GRAPH_COLORS.node.visited.fill;
+                        strokeColor = GRAPH_COLORS.node.visited.stroke;
                       }
 
                       return (
@@ -1192,11 +1193,11 @@ export default function CycleDetectionPage() {
                           <motion.circle
                             cx={x}
                             cy={y}
-                            r={24}
+                            r={NODE_RADIUS}
                             fill={fillColor}
                             stroke={strokeColor}
-                            strokeWidth={isSelected || isActive ? "4" : "3"}
-                            animate={{ r: isActive ? 28 : isSelected ? 26 : 24 }}
+                            strokeWidth={isSelected || isActive ? EDGE_STROKE_WIDTH_SELECTED : EDGE_STROKE_WIDTH}
+                            animate={{ r: isActive ? NODE_RADIUS + 4 : isSelected ? NODE_RADIUS + 2 : NODE_RADIUS }}
                             transition={{ duration: 0.3 }}
                           />
                           <text

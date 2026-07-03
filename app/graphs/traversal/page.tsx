@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { RotateCcw, Zap, Plus, Trash2, Settings } from "lucide-react";
 import { useState, useMemo } from "react";
+import { GRAPH_COLORS, NODE_RADIUS, EDGE_STROKE_WIDTH, EDGE_STROKE_WIDTH_ACTIVE } from "@/components/graph-engine";
 
 type GraphNode = {
   id: number;
@@ -419,8 +420,8 @@ export default function GraphTraversalPage() {
                           y1={y1}
                           x2={x2}
                           y2={y2}
-                          stroke={isActive ? "#7D8F3B" : "#D8CCA3"}
-                          strokeWidth={isActive ? "3" : "2"}
+                          stroke={isActive ? GRAPH_COLORS.edge.active : GRAPH_COLORS.edge.normal}
+                          strokeWidth={isActive ? EDGE_STROKE_WIDTH_ACTIVE : EDGE_STROKE_WIDTH}
                           animate={{
                             opacity: isActive ? 1 : 0.6,
                           }}
@@ -437,20 +438,18 @@ export default function GraphTraversalPage() {
                         const isVisited = visitedNodes.includes(node.id);
                         const isActive = activeNode === node.id;
                         const isSourceOrDest = sourceNode === node.id || destNode === node.id;
-                        const nodeRadius = 24;
-
-                        let fillColor = "#F7F1DD";
-                        let strokeColor = "#D8CCA3";
+                        let fillColor = GRAPH_COLORS.node.default.fill;
+                        let strokeColor = GRAPH_COLORS.node.default.stroke;
 
                         if (isActive) {
-                          fillColor = "#AAB76A";
-                          strokeColor = "#556B2F";
+                          fillColor = GRAPH_COLORS.node.current.fill;
+                          strokeColor = GRAPH_COLORS.node.current.stroke;
                         } else if (isSourceOrDest) {
-                          fillColor = "#FED66A";
-                          strokeColor = "#AAB76A";
+                          fillColor = GRAPH_COLORS.node.visited.fill;
+                          strokeColor = GRAPH_COLORS.node.visited.stroke;
                         } else if (isVisited) {
-                          fillColor = "#F1E8C7";
-                          strokeColor = "#7D8F3B";
+                          fillColor = GRAPH_COLORS.node.visited.fill;
+                          strokeColor = GRAPH_COLORS.node.visited.stroke;
                         }
 
                         return (
@@ -464,12 +463,12 @@ export default function GraphTraversalPage() {
                             <motion.circle
                               cx={x}
                               cy={y}
-                              r={nodeRadius}
+                              r={NODE_RADIUS}
                               fill={fillColor}
                               stroke={strokeColor}
-                              strokeWidth={isSourceOrDest ? "4" : isActive ? "4" : "3"}
+                              strokeWidth={isSourceOrDest || isActive ? EDGE_STROKE_WIDTH_ACTIVE : EDGE_STROKE_WIDTH}
                               animate={{
-                                r: isActive ? 28 : isSourceOrDest ? 26 : nodeRadius,
+                                r: isActive ? NODE_RADIUS + 4 : isSourceOrDest ? NODE_RADIUS + 2 : NODE_RADIUS,
                               }}
                               transition={{ duration: 0.3 }}
                               className="transition-all duration-300"

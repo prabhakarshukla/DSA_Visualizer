@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle, Info, Pause, Play, Plus, RotateCcw, Shuffle, Trash2, Zap, Download, AlertTriangle, Activity, Layers, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { GRAPH_COLORS, NODE_RADIUS, EDGE_STROKE_WIDTH, EDGE_STROKE_WIDTH_ACTIVE, generateNodePosition } from "@/components/graph-engine";
 
 type GraphNode = {
   id: number;
@@ -55,7 +56,7 @@ type TimelineSnapshot = {
   cycleEdges: WeightedEdge[];
 };
 
-const NODE_RADIUS = 24;
+const NODE_RADIUS_LOCAL = NODE_RADIUS;
 const ARROW_GAP = 6;
 const ARROW_LENGTH = 14;
 const ARROW_WIDTH = 11;
@@ -71,14 +72,6 @@ const getSpeedMultiplier = (speedLevel: SpeedLevel) => {
     case "fast":
       return 0.5;
   }
-};
-
-const generateNodePosition = (nodeCount: number, index: number) => {
-  const angle = (index / Math.max(nodeCount, 1)) * 2 * Math.PI;
-  const radius = 30 + nodeCount * 2;
-  const x = 50 + radius * Math.cos(angle);
-  const y = 50 + radius * Math.sin(angle);
-  return { x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) };
 };
 
 const getArrowPoints = (tip: Point, angle: number) => {
@@ -109,16 +102,16 @@ const getEdgeGeometry = (from: Point, to: Point): EdgeGeometry | null => {
   const dy = to.y - from.y;
   const distance = Math.hypot(dx, dy);
 
-  if (distance <= NODE_RADIUS * 2) return null;
+  if (distance <= NODE_RADIUS_LOCAL * 2) return null;
 
   const unit = { x: dx / distance, y: dy / distance };
   const start = {
-    x: from.x + unit.x * NODE_RADIUS,
-    y: from.y + unit.y * NODE_RADIUS,
+    x: from.x + unit.x * NODE_RADIUS_LOCAL,
+    y: from.y + unit.y * NODE_RADIUS_LOCAL,
   };
   const end = {
-    x: to.x - unit.x * (NODE_RADIUS + ARROW_GAP),
-    y: to.y - unit.y * (NODE_RADIUS + ARROW_GAP),
+    x: to.x - unit.x * (NODE_RADIUS_LOCAL + ARROW_GAP),
+    y: to.y - unit.y * (NODE_RADIUS_LOCAL + ARROW_GAP),
   };
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
 
@@ -1111,25 +1104,25 @@ export default function BellmanFordPage() {
                       const isShortestPathNode = algorithmState === "completed" && !hasNegativeCycle && shortestPathNodeIds.has(node.id);
                       const distance = displayedDistances[node.id] ?? Infinity;
 
-                      let fillColor = "#F7F1DD";
-                      let strokeColor = "#D8CCA3";
+                      let fillColor: string = GRAPH_COLORS.node.default.fill;
+                      let strokeColor: string = GRAPH_COLORS.node.default.stroke;
                       if (isCycleNode) {
-                        fillColor = "#DC2626";
-                        strokeColor = "#991B1B";
+                        fillColor = GRAPH_COLORS.node.current.fill;
+                        strokeColor = GRAPH_COLORS.node.current.stroke;
                       } else if (isShortestPathNode) {
-                        fillColor = "#4B5320";
-                        strokeColor = "#4B5320";
+                        fillColor = GRAPH_COLORS.node.completed.fill;
+                        strokeColor = GRAPH_COLORS.node.completed.stroke;
                       } else if (isSource) {
-                        fillColor = "#DCE6B0";
-                        strokeColor = "#7D8F3B";
+                        fillColor = GRAPH_COLORS.node.visited.fill;
+                        strokeColor = GRAPH_COLORS.node.visited.stroke;
                       }
                       if (isCurrent) {
-                        fillColor = "#AAB76A";
-                        strokeColor = "#556B2F";
+                        fillColor = GRAPH_COLORS.node.current.fill;
+                        strokeColor = GRAPH_COLORS.node.current.stroke;
                       }
                       if (isUpdated) {
-                        fillColor = "#FED66A";
-                        strokeColor = "#AAB76A";
+                        fillColor = GRAPH_COLORS.node.visited.fill;
+                        strokeColor = GRAPH_COLORS.node.visited.stroke;
                       }
 
                       return (
@@ -1143,11 +1136,11 @@ export default function BellmanFordPage() {
                           <motion.circle
                             cx={x}
                             cy={y}
-                            r={24}
+                            r={NODE_RADIUS}
                             fill={fillColor}
                             stroke={strokeColor}
-                            strokeWidth={isCurrent || isUpdated || isSource ? "4" : "3"}
-                            animate={{ r: isCurrent || isUpdated || isShortestPathNode || isCycleNode ? 28 : 24 }}
+                            strokeWidth={isCurrent || isUpdated || isSource ? EDGE_STROKE_WIDTH_ACTIVE : EDGE_STROKE_WIDTH}
+                            animate={{ r: isCurrent || isUpdated || isShortestPathNode || isCycleNode ? NODE_RADIUS + 4 : NODE_RADIUS }}
                             transition={{ duration: 0.3 }}
                           />
                           <text x={x} y={y - 2} textAnchor="middle" dominantBaseline="middle" className="pointer-events-none text-sm font-bold" fill={isShortestPathNode || isCycleNode ? "#F7F1DD" : "#4B5320"}>
@@ -1252,140 +1245,22 @@ export default function BellmanFordPage() {
                     )}
                   </div>
                 </div>
+
                 {completionMessage && (
                   <div className={`rounded-2xl border p-3 text-sm font-semibold ${hasNegativeCycle ? "border-red-300 bg-red-50 text-red-700" : "border-[#AAB76A] bg-[#F1E8C7] text-[#4B5320]"}`}>
                     {completionMessage}
                   </div>
                 )}
-              </div>
-            </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
-              <h3 className="text-lg font-semibold text-[#4B5320]">Live Steps</h3>
-              <ul className="mt-3 space-y-2 text-sm text-[#4B5320]">
-                {steps.slice(-6).map((step, index) => (
-                  <li key={`${step.explanation}-${index}`} className="flex items-start gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#7D8F3B]" />
-                    <span>{step.explanation}</span>
-                  </li>
-                ))}
-              </ul>
+                {currentStepMessage && (
+                  <div className="rounded-2xl border border-[#D8CCA3] bg-white px-3 py-2 text-sm text-[#4B5320]">
+                    {currentStepMessage}
+                  </div>
+                )}
+
+              </div>
             </motion.div>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
-            <h3 className="text-lg font-semibold text-[#4B5320]">Algorithm Progress</h3>
-            <div className="mt-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#556B2F]">Relaxed Edges</p>
-                <p className="text-xs font-semibold text-[#7D8F3B]">{progressPercentage}%</p>
-              </div>
-              <div className="h-2 overflow-hidden rounded-full bg-[#F1E8C7]">
-                <motion.div animate={{ width: `${progressPercentage}%` }} className="h-full bg-gradient-to-r from-[#7D8F3B] to-[#9CA763]" transition={{ duration: 0.4 }} />
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-2 text-center">
-                  <p className="font-semibold text-[#7D8F3B]">{nodes.length}</p>
-                  <p className="text-[#556B2F]">Total Nodes</p>
-                </div>
-                <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-2 text-center">
-                  <p className="font-semibold text-[#7D8F3B]">{edges.length}</p>
-                  <p className="text-[#556B2F]">Total Edges</p>
-                </div>
-                <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-2 text-center">
-                  <p className="font-semibold text-[#7D8F3B]">{relaxationCounter}</p>
-                  <p className="text-[#556B2F]">Relaxations</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)] xl:col-span-2">
-            <h3 className="text-lg font-semibold text-[#4B5320]">Educational Cards</h3>
-            <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
-                <p className="text-sm font-semibold text-[#4B5320]">Bellman-Ford Explained</p>
-                <p className="mt-2 text-sm text-[#556B2F]">A dynamic shortest path algorithm that repeatedly relaxes all edges from the chosen source.</p>
-              </div>
-              <div className="rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
-                <p className="text-sm font-semibold text-[#4B5320]">Relaxation Concept</p>
-                <p className="mt-2 text-sm text-[#556B2F]">If distance[u] + w(u, v) is smaller, update distance[v] and remember the predecessor.</p>
-              </div>
-              <div className="rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
-                <p className="text-sm font-semibold text-[#4B5320]">Negative Cycles</p>
-                <p className="mt-2 text-sm text-[#556B2F]">A final validation pass catches cycles that keep reducing path cost forever.</p>
-              </div>
-              <div className="rounded-2xl border border-[#D8CCA3] bg-[#F1E8C7] p-4">
-                <p className="text-sm font-semibold text-[#4B5320]">Bellman-Ford vs Dijkstra</p>
-                <p className="mt-2 text-sm text-[#556B2F]">Bellman-Ford handles negative weights; Dijkstra is faster but requires non-negative edges.</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-[#4B5320]">Summary</h3>
-              {algorithmState === "completed" && !hasNegativeCycle && <CheckCircle className="h-5 w-5 text-[#7D8F3B]" />}
-              {hasNegativeCycle && <AlertTriangle className="h-5 w-5 text-red-500" />}
-            </div>
-            <div className="space-y-3 text-sm text-[#556B2F]">
-              <p className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] p-3 font-mono text-[#4B5320]">
-                {sourceNode === null ? "Select a source node." : `Source ${sourceNode} shortest distances are shown above.`}
-              </p>
-              {hasNegativeCycle ? (
-                <p className="rounded-lg border border-red-300 bg-red-50 p-3 text-red-700">A negative cycle exists, so shortest paths are undefined.</p>
-              ) : (
-                <p>The highlighted dark edges form the shortest-path tree from the source after V - 1 relaxation passes.</p>
-              )}
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
-            <h3 className="text-lg font-semibold text-[#4B5320]">Time Complexity</h3>
-            <div className="mt-4 space-y-3 text-sm text-[#556B2F]">
-              <div className="rounded-lg border border-[#AAB76A] bg-[#F1E8C7] px-3 py-2">
-                <p className="font-semibold text-[#7D8F3B]">Bellman-Ford: O(VE)</p>
-                <p className="mt-1 text-xs">Each edge is relaxed repeatedly across V - 1 passes.</p>
-              </div>
-              <p className="text-xs"><span className="font-semibold text-[#4B5320]">Space:</span> O(V + E) for graph storage and path bookkeeping.</p>
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
-            <div className="mb-4 flex items-center gap-2">
-              <Info className="h-5 w-5 text-[#7D8F3B]" />
-              <h3 className="text-lg font-semibold text-[#4B5320]">Educational Notes</h3>
-            </div>
-            <div className="space-y-3 text-sm text-[#556B2F]">
-              <p>Bellman-Ford works with negative weights, unlike Dijkstra.</p>
-              <p>It computes shortest paths by repeatedly relaxing edges from the source.</p>
-              <p>A final pass detects negative cycles that make shortest paths undefined.</p>
-            </div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
-            <h3 className="text-lg font-semibold text-[#4B5320]">Graph Legend</h3>
-            <div className="mt-4 grid gap-3 text-sm text-[#556B2F]">
-              <div className="flex items-center gap-3">
-                <span className="h-3 w-3 rounded-full bg-[#DCE6B0] ring-2 ring-[#7D8F3B]" />
-                <span>Source node</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="h-3 w-3 rounded-full bg-[#AAB76A] ring-2 ring-[#556B2F]" />
-                <span>Node currently being relaxed</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="h-3 w-3 rounded-full bg-[#FED66A] ring-2 ring-[#AAB76A]" />
-                <span>Node updated in the current pass</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="h-3 w-3 rounded-full bg-[#4B5320] ring-2 ring-[#4B5320]" />
-                <span>Shortest path tree edges after completion</span>
-              </div>
-            </div>
-          </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex h-full flex-col rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-[0_10px_30px_rgba(75,83,32,0.08)]">
             <div className="mb-4 flex items-center gap-2">

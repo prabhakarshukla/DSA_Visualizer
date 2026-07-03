@@ -21,6 +21,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { ControlsPanel, GraphCanvas, GraphControls, GRAPH_COLORS, NODE_RADIUS, EDGE_STROKE_WIDTH, EDGE_STROKE_WIDTH_ACTIVE, EDGE_STROKE_WIDTH_SELECTED, EDGE_STROKE_WIDTH_PATH, generateNodePosition } from "@/components/graph-engine";
 
 type GraphNode = {
   id: number;
@@ -56,14 +57,6 @@ type VisualizationStep = {
 type GraphDensity = "sparse" | "medium" | "dense";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const generateNodePosition = (nodeCount: number, index: number) => {
-  const angle = (index / Math.max(nodeCount, 1)) * 2 * Math.PI;
-  const radius = 30 + nodeCount * 2;
-  const x = 50 + radius * Math.cos(angle);
-  const y = 50 + radius * Math.sin(angle);
-  return { x: Math.max(5, Math.min(95, x)), y: Math.max(5, Math.min(95, y)) };
-};
 
 const getSpeedMultiplier = (speedLevel: SpeedLevel) => {
   switch (speedLevel) {
@@ -617,304 +610,181 @@ export default function DijkstraPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Graph Visualization (70%) */}
           <div className="lg:col-span-2">
-            <div className="rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-6 shadow-lg">
-              <div className="flex justify-center rounded-2xl bg-[#F1E8C7] p-4">
-                <svg
-                  width={svgWidth}
-                  height={svgHeight}
-                  className="cursor-grab active:cursor-grabbing"
-                  onMouseDown={handleSvgMouseDown}
-                  onMouseMove={handleSvgMouseMove}
-                  onMouseUp={handleSvgMouseUp}
-                  onMouseLeave={handleSvgMouseUp}
-                  onClick={handleSvgClick}
-                >
-                  {/* Edges */}
-                  {edges.map((edge, idx) => {
-                    const fromNode = nodes.find((n) => n.id === edge.from);
-                    const toNode = nodes.find((n) => n.id === edge.to);
-                    if (!fromNode || !toNode) return null;
-
-                    const x1 = (fromNode.x / 100) * svgWidth;
-                    const y1 = (fromNode.y / 100) * svgHeight;
-                    const x2 = (toNode.x / 100) * svgWidth;
-                    const y2 = (toNode.y / 100) * svgHeight;
-
-                    const isRelaxing = relaxingEdge && relaxingEdge.from === edge.from && relaxingEdge.to === edge.to;
-                    const isOnPath =
-                      shortestPathEdges.some(
-                        (pe) => (pe.from === edge.from && pe.to === edge.to) || (pe.from === edge.to && pe.to === edge.from)
-                      ) && algorithmState === "completed";
-
-                    const midX = (x1 + x2) / 2;
-                    const midY = (y1 + y2) / 2;
-
-                    return (
-                      <g key={`edge-${idx}`}>
-                        <motion.line
-                          x1={x1}
-                          y1={y1}
-                          x2={x2}
-                          y2={y2}
-                          stroke={isOnPath ? "#4B5320" : isRelaxing ? "#FF8C42" : "#D8CCA3"}
-                          strokeWidth={isOnPath ? "4" : isRelaxing ? "3" : "2"}
-                          strokeDasharray={isOnPath ? "5,5" : "0"}
-                          filter={isRelaxing ? "url(#relaxGlow)" : isOnPath ? "url(#pathGlow)" : "none"}
-                          markerEnd={isOnPath ? "url(#arrowhead-path)" : isRelaxing ? "url(#arrowhead-active)" : "url(#arrowhead)"}
-                          animate={{
-                            opacity: isOnPath ? 1 : isRelaxing ? [0.6, 1, 0.6] : 0.6,
-                            strokeDashoffset: isOnPath ? [0, -10] : 0,
-                          }}
-                          transition={{
-                            opacity: { duration: 0.4 },
-                            strokeDashoffset: { repeat: Infinity, duration: 1 },
-                          }}
-                        />
-                        <text
-                          x={midX}
-                          y={midY - 5}
-                          textAnchor="middle"
-                          className={`text-xs font-bold ${isOnPath ? "fill-[#4B5320]" : edge.weight < 0 ? "fill-red-600" : "fill-[#556B2F]"}`}
-                        >
-                          {edge.weight}
-                        </text>
-                      </g>
-                    );
-                  })}
-
-                  {/* Nodes */}
-                  <AnimatePresence>
-                    {nodes.map((node) => {
-                      const x = (node.x / 100) * svgWidth;
-                      const y = (node.y / 100) * svgHeight;
-                      const isVisited = dijkstraState.visited.has(node.id);
-                      const isActive = dijkstraState.currentNode === node.id;
-                      const isSource = sourceNode === node.id;
-                      const isDest = destinationNode === node.id;
-                      const isOnPath = shortestPath?.path.includes(node.id) && algorithmState === "completed";
-
-                      let fillColor = "#F7F1DD";
-                      let strokeColor = "#D8CCA3";
-
-                      if (isOnPath && algorithmState === "completed") {
-                        fillColor = "#4B5320";
-                        strokeColor = "#4B5320";
-                      } else if (isActive) {
-                        fillColor = "#AAB76A";
-                        strokeColor = "#556B2F";
-                      } else if (isSource || isDest) {
-                        fillColor = "#FED66A";
-                        strokeColor = "#AAB76A";
-                      } else if (isVisited) {
-                        fillColor = "#F1E8C7";
-                        strokeColor = "#7D8F3B";
-                      }
-
-                      const isSelectedForEdge = edgeFrom === node.id;
-                      const strokeWidthVal = isSelectedForEdge ? "5" : isSource || isDest || isActive || isOnPath ? "4" : "3";
-
-                      return (
-                        <motion.g
-                          key={`node-${node.id}`}
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          whileHover={{ scale: 1.15 }}
-                          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                          onClick={(e) => handleNodeClick(node.id, e as unknown as React.MouseEvent)}
-                          style={{ cursor: edgeMode || sourceOrDestMode ? "pointer" : "grab" }}
-                        >
-                          <motion.circle
-                            cx={x}
-                            cy={y}
-                            r={24}
-                            fill={fillColor}
-                            stroke={isSelectedForEdge ? "#FF6B6B" : strokeColor}
-                            strokeWidth={strokeWidthVal}
-                            animate={{
-                              r: isActive || isSelectedForEdge ? 28 : isSource || isDest || isOnPath ? 26 : 24,
-                            }}
-                            transition={{ duration: 0.3 }}
-                          />
-                          <text
-                            x={x}
-                            y={y}
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            className={`pointer-events-none text-sm font-bold ${isOnPath && algorithmState === "completed" ? "fill-[#F7F1DD]" : "fill-[#4B5320]"}`}
-                          >
-                            {node.id}
-                          </text>
-                          {algorithmState === "idle" && (
-                            <motion.circle
-                              cx={x + 16}
-                              cy={y - 16}
-                              r={8}
-                              fill="#FF6B6B"
-                              stroke="#fff"
-                              strokeWidth="1.5"
-                              opacity={0}
-                              whileHover={{ opacity: 1 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteNode(node.id);
-                              }}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <title>Delete node</title>
-                            </motion.circle>
-                          )}
-                        </motion.g>
-                      );
-                    })}
-                  </AnimatePresence>
-                </svg>
-              </div>
-
-              {nodes.length === 0 && (
+            <GraphCanvas
+              title="Graph Visualization"
+              subtitle="Create nodes, connect weighted edges, and choose source and destination nodes."
+              nodes={nodes}
+              edges={edges}
+              width={svgWidth}
+              height={svgHeight}
+              getNodePoint={(node) => node}
+              onMouseDown={handleSvgMouseDown}
+              onMouseMove={handleSvgMouseMove}
+              onMouseUp={handleSvgMouseUp}
+              onMouseLeave={handleSvgMouseUp}
+              onClick={handleSvgClick}
+              emptyState={
                 <div className="mt-4 text-center text-sm text-[#556B2F]">
                   Create nodes or generate a graph to start
                 </div>
-              )}
-            </div>
+              }
+              renderEdge={({ edge, geometry, fromPoint, toPoint }) => {
+                const edgeData = edge as WeightedEdge;
+                const isRelaxing = relaxingEdge && relaxingEdge.from === edgeData.from && relaxingEdge.to === edgeData.to;
+                const isOnPath =
+                  shortestPathEdges.some(
+                    (pe) => (pe.from === edgeData.from && pe.to === edgeData.to) || (pe.from === edgeData.to && pe.to === edgeData.from)
+                  ) && algorithmState === "completed";
+
+                return (
+                  <g>
+                    <motion.line
+                      x1={fromPoint.x}
+                      y1={fromPoint.y}
+                      x2={toPoint.x}
+                      y2={toPoint.y}
+                      stroke={isOnPath ? GRAPH_COLORS.edge.shortestPath : isRelaxing ? GRAPH_COLORS.edge.active : GRAPH_COLORS.edge.normal}
+                      strokeWidth={isOnPath ? EDGE_STROKE_WIDTH_PATH : isRelaxing ? EDGE_STROKE_WIDTH_ACTIVE : EDGE_STROKE_WIDTH}
+                      strokeDasharray={isOnPath ? "5,5" : "0"}
+                      filter={isRelaxing ? "url(#relaxGlow)" : isOnPath ? "url(#pathGlow)" : "none"}
+                      markerEnd={isOnPath ? "url(#arrowhead-path)" : isRelaxing ? "url(#arrowhead-active)" : "url(#arrowhead)"}
+                      animate={{
+                        opacity: isOnPath ? 1 : isRelaxing ? [0.6, 1, 0.6] : 0.6,
+                        strokeDashoffset: isOnPath ? [0, -10] : 0,
+                      }}
+                      transition={{
+                        opacity: { duration: 0.4 },
+                        strokeDashoffset: { repeat: Infinity, duration: 1 },
+                      }}
+                    />
+                    <text
+                      x={geometry.label.x}
+                      y={geometry.label.y - 5}
+                      textAnchor="middle"
+                      className={`text-xs font-bold ${isOnPath ? "fill-[#4B5320]" : edgeData.weight < 0 ? "fill-red-600" : "fill-[#556B2F]"}`}
+                    >
+                      {edgeData.weight}
+                    </text>
+                  </g>
+                );
+              }}
+              renderNode={({ node, point }) => {
+                const graphNode = node as GraphNode;
+                const x = point.x;
+                const y = point.y;
+                const isVisited = dijkstraState.visited.has(graphNode.id);
+                const isActive = dijkstraState.currentNode === graphNode.id;
+                const isSource = sourceNode === graphNode.id;
+                const isDest = destinationNode === graphNode.id;
+                const isOnPath = shortestPath?.path.includes(graphNode.id) && algorithmState === "completed";
+                const isSelectedForEdge = edgeFrom === graphNode.id;
+
+                let fillColor = GRAPH_COLORS.node.default.fill;
+                let strokeColor = GRAPH_COLORS.node.default.stroke;
+
+                if (isOnPath && algorithmState === "completed") {
+                  fillColor = GRAPH_COLORS.node.completed.fill;
+                  strokeColor = GRAPH_COLORS.node.completed.stroke;
+                } else if (isActive) {
+                  fillColor = GRAPH_COLORS.node.current.fill;
+                  strokeColor = GRAPH_COLORS.node.current.stroke;
+                } else if (isSource || isDest) {
+                  fillColor = GRAPH_COLORS.node.visited.fill;
+                  strokeColor = GRAPH_COLORS.node.visited.stroke;
+                } else if (isVisited) {
+                  fillColor = GRAPH_COLORS.node.visited.fill;
+                  strokeColor = GRAPH_COLORS.node.visited.stroke;
+                }
+
+                const strokeWidthVal = isSelectedForEdge ? EDGE_STROKE_WIDTH_SELECTED : isSource || isDest || isActive || isOnPath ? EDGE_STROKE_WIDTH_ACTIVE : EDGE_STROKE_WIDTH;
+
+                return (
+                  <g
+                    onClick={(e) => handleNodeClick(graphNode.id, e as unknown as React.MouseEvent)}
+                    style={{ cursor: edgeMode || sourceOrDestMode ? "pointer" : "grab" }}
+                  >
+                    <motion.circle
+                      cx={x}
+                      cy={y}
+                      r={NODE_RADIUS}
+                      fill={fillColor}
+                      stroke={isSelectedForEdge ? GRAPH_COLORS.edge.selected : strokeColor}
+                      strokeWidth={strokeWidthVal}
+                      animate={{
+                        r: isActive || isSelectedForEdge ? NODE_RADIUS + 4 : isSource || isDest || isOnPath ? NODE_RADIUS + 2 : NODE_RADIUS,
+                      }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <text
+                      x={x}
+                      y={y}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className={`pointer-events-none text-sm font-bold ${isOnPath && algorithmState === "completed" ? "fill-[#F7F1DD]" : "fill-[#4B5320]"}`}
+                    >
+                      {graphNode.id}
+                    </text>
+                    {algorithmState === "idle" && (
+                      <motion.circle
+                        cx={x + 16}
+                        cy={y - 16}
+                        r={8}
+                        fill="#FF6B6B"
+                        stroke="#fff"
+                        strokeWidth="1.5"
+                        opacity={0}
+                        whileHover={{ opacity: 1 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteNode(graphNode.id);
+                        }}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <title>Delete node</title>
+                      </motion.circle>
+                    )}
+                  </g>
+                );
+              }}
+            />
           </div>
 
           {/* Right: Sticky Control Panel (30%) */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto rounded-3xl border border-[#D8CCA3] bg-[#F7F1DD]/90 p-5 shadow-lg">
-              {/* Graph Controls */}
-              <div className="space-y-2">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-[#4B5320]">
-                  <Settings className="h-4 w-4" /> Controls
-                </h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={handleAddNode}
-                    disabled={algorithmState === "running"}
-                    className="w-full rounded-lg bg-[#7D8F3B] px-3 py-2 text-xs font-medium text-white hover:bg-[#556B2F] disabled:opacity-50"
-                  >
-                    <Plus className="mb-1 inline h-3 w-3" /> Add Node
-                  </button>
-
-                  <button
-                    onClick={() => setEdgeMode(!edgeMode)}
-                    disabled={nodes.length < 2 || algorithmState === "running"}
-                    className={`w-full rounded-lg px-3 py-2 text-xs font-medium transition ${
-                      edgeMode
-                        ? "bg-[#FF6B6B] text-white"
-                        : "border border-[#FF9999] bg-white text-[#FF6B6B] hover:bg-[#FFE5E5]"
-                    } disabled:opacity-50`}
-                  >
-                    {edgeFrom ? `Connect to node (from ${edgeFrom})` : "➕ Add Edge"}
-                  </button>
-
-                  <button
-                    onClick={() => setShowGenerateModal(true)}
-                    disabled={algorithmState === "running"}
-                    className="w-full rounded-lg border border-[#7D8F3B] bg-white px-3 py-2 text-xs font-medium text-[#7D8F3B] hover:bg-[#F1E8C7] disabled:opacity-50"
-                  >
-                    <Download className="mb-1 inline h-3 w-3" /> Generate
-                  </button>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSourceOrDestMode("source")}
-                      disabled={nodes.length === 0 || algorithmState === "running"}
-                      className={`flex-1 rounded-lg px-2 py-2 text-xs font-medium transition ${
-                        sourceOrDestMode === "source"
-                          ? "bg-[#FED66A] text-[#4B5320]"
-                          : "bg-[#9CA763] text-white hover:bg-[#7D8F3B]"
-                      } disabled:opacity-50`}
-                    >
-                      From: {sourceNode || "—"}
-                    </button>
-                    <button
-                      onClick={() => setSourceOrDestMode("dest")}
-                      disabled={nodes.length === 0 || algorithmState === "running"}
-                      className={`flex-1 rounded-lg px-2 py-2 text-xs font-medium transition ${
-                        sourceOrDestMode === "dest"
-                          ? "bg-[#FED66A] text-[#4B5320]"
-                          : "bg-[#AAB76A] text-white hover:bg-[#7D8F3B]"
-                      } disabled:opacity-50`}
-                    >
-                      To: {destinationNode || "—"}
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={handleClearGraph}
-                    disabled={nodes.length === 0 || algorithmState === "running"}
-                    className="w-full rounded-lg border border-red-300 bg-white px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
-                  >
-                    <Trash2 className="mb-1 inline h-3 w-3" /> Clear
-                  </button>
-                </div>
-              </div>
-
-              <div className="border-t border-[#D8CCA3]"></div>
-
-              {/* Algorithm Controls */}
-              <div className="space-y-2">
-                <h3 className="flex items-center gap-2 text-sm font-semibold text-[#4B5320]">
-                  <Play className="h-4 w-4" /> Algorithm
-                </h3>
-
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <label className="flex-1">
-                      <div className="text-xs font-semibold text-[#556B2F] mb-1">Speed</div>
-                      <select
-                        value={speed}
-                        onChange={(e) => setSpeed(e.target.value as SpeedLevel)}
-                        disabled={algorithmState === "running"}
-                        className="w-full rounded px-2 py-1 text-xs border border-[#D8CCA3] bg-white text-[#4B5320]"
-                      >
-                        <option value="slow">Slow</option>
-                        <option value="medium">Medium</option>
-                        <option value="fast">Fast</option>
-                      </select>
-                    </label>
-                  </div>
-
-                  <div className="flex gap-2">
-                    {algorithmState === "idle" && (
-                      <button
-                        onClick={handleStartAlgorithm}
-                        disabled={sourceNode === null || nodes.length === 0}
-                        className="flex-1 rounded-lg bg-[#7D8F3B] px-3 py-2 text-xs font-semibold text-white hover:bg-[#556B2F] disabled:opacity-50"
-                      >
-                        <Play className="mb-1 inline h-3 w-3" /> Start
-                      </button>
-                    )}
-
-                    {algorithmState === "running" && (
-                      <button
-                        onClick={handlePause}
-                        className="flex-1 rounded-lg bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white hover:bg-[#7D8F3B]"
-                      >
-                        <Pause className="mb-1 inline h-3 w-3" /> Pause
-                      </button>
-                    )}
-
-                    {algorithmState === "paused" && (
-                      <button
-                        onClick={handleResume}
-                        className="flex-1 rounded-lg bg-[#9CA763] px-3 py-2 text-xs font-semibold text-white hover:bg-[#7D8F3B]"
-                      >
-                        <Play className="mb-1 inline h-3 w-3" /> Resume
-                      </button>
-                    )}
-
-                    {algorithmState !== "idle" && (
-                      <button
-                        onClick={handleReset}
-                        className="flex-1 rounded-lg border border-[#7D8F3B] bg-white px-3 py-2 text-xs font-semibold text-[#7D8F3B] hover:bg-[#F1E8C7]"
-                      >
-                        <RotateCcw className="mb-1 inline h-3 w-3" /> Reset
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+            <ControlsPanel
+              title="Controls"
+              className="sticky top-24 space-y-4 max-h-[calc(100vh-150px)] overflow-y-auto"
+            >
+              <GraphControls
+                onStart={handleStartAlgorithm}
+                onPause={handlePause}
+                onResume={handleResume}
+                onReset={handleReset}
+                onStepBack={() => {}}
+                onStepForward={() => {}}
+                onSpeedChange={setSpeed}
+                onGenerateRandomGraph={() => setShowGenerateModal(true)}
+                onClearGraph={handleClearGraph}
+                startDisabled={sourceNode === null || nodes.length === 0 || algorithmState === "running"}
+                pauseDisabled={algorithmState !== "running"}
+                resumeDisabled={algorithmState !== "paused"}
+                resetDisabled={algorithmState === "idle"}
+                stepBackDisabled={true}
+                stepForwardDisabled={true}
+                speedDisabled={algorithmState === "running"}
+                generateDisabled={algorithmState === "running"}
+                clearDisabled={nodes.length === 0 || algorithmState === "running"}
+                speed={speed}
+                startTooltip="Start Dijkstra's algorithm"
+                pauseTooltip="Pause the current run"
+                resumeTooltip="Resume the current run"
+                resetTooltip="Reset distances, queue, and progress"
+                stepBackTooltip="Step back is not available for Dijkstra"
+                stepForwardTooltip="Step forward is not available for Dijkstra"
+                speedTooltip="Adjust animation speed"
+                generateTooltip="Generate a random weighted graph"
+                clearTooltip="Clear the current graph"
+              />
 
               {/* Progress */}
               {algorithmState !== "idle" && (
@@ -1044,7 +914,7 @@ export default function DijkstraPage() {
                   </div>
                 </CollapsibleSection>
               )}
-            </div>
+            </ControlsPanel>
           </div>
         </div>
       </div>

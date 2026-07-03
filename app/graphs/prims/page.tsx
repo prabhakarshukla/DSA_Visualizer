@@ -24,6 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { GRAPH_COLORS, NODE_RADIUS, EDGE_STROKE_WIDTH, EDGE_STROKE_WIDTH_ACTIVE, EDGE_STROKE_WIDTH_SELECTED, EDGE_STROKE_WIDTH_MST } from "@/components/graph-engine";
 
 type GraphNode = {
   id: number;
@@ -625,24 +626,24 @@ export default function PrimsVisualizer() {
                           (e.from === edge.to && e.to === edge.from)
                       );
 
-                      let strokeColor = "#D8CCA3";
-                      let strokeWidthVal = 2;
+                      let strokeColor = GRAPH_COLORS.edge.normal;
+                      let strokeWidthVal = EDGE_STROKE_WIDTH;
                       let filterUrl = "none";
                       let opacity = 0.6;
 
                       if (isInMST) {
-                        strokeColor = "#4B5320";
-                        strokeWidthVal = 4;
+                        strokeColor = GRAPH_COLORS.edge.mst;
+                        strokeWidthVal = EDGE_STROKE_WIDTH_MST;
                         opacity = 0.9;
                         filterUrl = "url(#mstGlow)";
                       } else if (isRelaxing) {
-                        strokeColor = "#FF6B6B";
-                        strokeWidthVal = 3;
+                        strokeColor = GRAPH_COLORS.edge.cycle;
+                        strokeWidthVal = EDGE_STROKE_WIDTH_ACTIVE;
                         filterUrl = "url(#relaxGlow)";
                         opacity = 1;
                       } else if (isCandidate) {
-                        strokeColor = "#FED66A";
-                        strokeWidthVal = 2.5;
+                        strokeColor = GRAPH_COLORS.edge.selected;
+                        strokeWidthVal = EDGE_STROKE_WIDTH_SELECTED;
                         opacity = 0.8;
                       }
 
@@ -689,21 +690,21 @@ export default function PrimsVisualizer() {
                       const isSelectedForEdge = edgeFrom === node.id;
                       const isSelectedForDeletion = selectedNodeForDeletion === node.id;
 
-                      let fillColor = "#F7F1DD";
-                      let strokeColor = "#D8CCA3";
+                      let fillColor = GRAPH_COLORS.node.default.fill;
+                      let strokeColor = GRAPH_COLORS.node.default.stroke;
 
                       if (isSelectedForDeletion) {
-                        fillColor = "#FF6B6B";
-                        strokeColor = "#FF3333";
+                        fillColor = GRAPH_COLORS.node.current.fill;
+                        strokeColor = GRAPH_COLORS.node.current.stroke;
                       } else if (isSource) {
-                        fillColor = "#FED66A";
-                        strokeColor = "#AAB76A";
+                        fillColor = GRAPH_COLORS.node.visited.fill;
+                        strokeColor = GRAPH_COLORS.node.visited.stroke;
                       } else if (isVisited) {
-                        fillColor = "#AAB76A";
-                        strokeColor = "#556B2F";
+                        fillColor = GRAPH_COLORS.node.completed.fill;
+                        strokeColor = GRAPH_COLORS.node.completed.stroke;
                       }
 
-                      const strokeWidthVal = isSelectedForDeletion ? "3" : isSelectedForEdge ? "2.5" : isSource || isVisited ? "2" : "1.5";
+                      const strokeWidthVal = isSelectedForDeletion ? EDGE_STROKE_WIDTH_ACTIVE : isSelectedForEdge ? EDGE_STROKE_WIDTH_SELECTED : isSource || isVisited ? EDGE_STROKE_WIDTH : EDGE_STROKE_WIDTH;
 
                       return (
                         <motion.g
@@ -718,12 +719,12 @@ export default function PrimsVisualizer() {
                           <motion.circle
                             cx={isNaN(x) ? 50 : x}
                             cy={isNaN(y) ? 50 : y}
-                            r={nodeRadius}
+                            r={NODE_RADIUS}
                             fill={fillColor}
-                            stroke={isSelectedForDeletion ? "#FF3333" : isSelectedForEdge ? "#FF6B6B" : strokeColor}
+                            stroke={isSelectedForDeletion ? GRAPH_COLORS.edge.cycle : isSelectedForEdge ? GRAPH_COLORS.edge.selected : strokeColor}
                             strokeWidth={strokeWidthVal}
                             animate={{
-                              r: isSelectedForDeletion ? nodeSelectedRadius : isSource || isVisited ? nodeActiveRadius : nodeRadius,
+                              r: isSelectedForDeletion ? NODE_RADIUS + 4 : isSource || isVisited ? NODE_RADIUS + 2 : NODE_RADIUS,
                             }}
                             transition={{ duration: 0.3 }}
                           />
