@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle, ChevronLeft, ChevronRight, Download, Info, Layers, Pause, Play, Plus, RotateCcw, Shuffle, Sparkles, Trash2, Zap } from "lucide-react";
+import { BookOpen, CheckCircle, ChevronLeft, ChevronRight, Download, Info, Layers, Pause, Play, Plus, RotateCcw, Shuffle, Sparkles, Trash2, Zap } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 type GraphNode = {
